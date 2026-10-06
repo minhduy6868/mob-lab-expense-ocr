@@ -1,7 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// ShellScreen provides the persistent NavigationBar wrapper (Slide 23)
+/// ShellScreen provides the modern Floating Glassmorphic Dock Navigation Bar
 class ShellScreen extends StatelessWidget {
   final Widget child;
 
@@ -35,33 +36,185 @@ class ShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final selectedIdx = _calculateSelectedIndex(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _calculateSelectedIndex(context),
-        onDestinationSelected: (idx) => _onItemTapped(idx, context),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Chi tiêu',
+      body: Stack(
+        children: [
+          // Main nested screen content (with bottom padding for floating bar)
+          Positioned.fill(
+            bottom: 74,
+            child: child,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.pie_chart_outline_rounded),
-            selectedIcon: Icon(Icons.pie_chart_rounded),
-            label: 'Báo cáo',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.document_scanner_outlined),
-            selectedIcon: Icon(Icons.document_scanner_rounded),
-            label: 'Quét OCR',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Cài đặt',
+
+          // Floating Glassmorphic Island Navigation Bar
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 12,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(26),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  height: 64,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1E293B).withValues(alpha: 0.85)
+                        : Colors.white.withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF334155).withValues(alpha: 0.8)
+                          : const Color(0xFFE2E8F0),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(
+                        index: 0,
+                        selectedIndex: selectedIdx,
+                        icon: Icons.account_balance_wallet_outlined,
+                        activeIcon: Icons.account_balance_wallet_rounded,
+                        label: 'Sổ chi',
+                        theme: theme,
+                        onTap: () => _onItemTapped(0, context),
+                      ),
+                      _buildNavItem(
+                        index: 1,
+                        selectedIndex: selectedIdx,
+                        icon: Icons.pie_chart_outline_rounded,
+                        activeIcon: Icons.pie_chart_rounded,
+                        label: 'Báo cáo',
+                        theme: theme,
+                        onTap: () => _onItemTapped(1, context),
+                      ),
+                      _buildCenterScanButton(
+                        isSelected: selectedIdx == 2,
+                        theme: theme,
+                        onTap: () => _onItemTapped(2, context),
+                      ),
+                      _buildNavItem(
+                        index: 3,
+                        selectedIndex: selectedIdx,
+                        icon: Icons.tune_rounded,
+                        activeIcon: Icons.tune_rounded,
+                        label: 'Hệ thống',
+                        theme: theme,
+                        onTap: () => _onItemTapped(3, context),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required int selectedIndex,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required ThemeData theme,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = index == selectedIndex;
+    final primaryColor = theme.colorScheme.primary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              size: 22,
+              color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenterScanButton({
+    required bool isSelected,
+    required ThemeData theme,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isSelected
+                ? [const Color(0xFF0284C7), const Color(0xFF0369A1)]
+                : [theme.colorScheme.primary, const Color(0xFF2563EB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.document_scanner_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 6),
+            Text(
+              'Quét OCR',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 12.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
