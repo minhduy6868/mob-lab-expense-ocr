@@ -6,9 +6,7 @@
 **Khoa:** Khoa Khoa học Máy tính  
 **Giảng viên phụ trách:** TS. Nguyễn Thanh Tuấn  
 **Sinh viên thực hiện:** **Nguyễn Minh Duy** — **MSSV:** **23IT038** (Lớp: 23IT)  
-**Thời gian thực hiện:** Tuần 7 – Tuần 8  
-**Trọng số:** 10% điểm học phần  
-**Live Web Demo (Cloudflare Pages):** https://vku-expense-ocr.pages.dev  
+**Bản thử nghiệm trực tuyến:** https://vku-expense-ocr.pages.dev  
 
 ---
 
@@ -21,7 +19,7 @@ Mini-Project #3 xây dựng giải pháp **VKU Expense OCR** — ứng dụng qu
 
 ## 2. KIẾN TRÚC HỆ THỐNG (SYSTEM ARCHITECTURE)
 
-Hệ thống được thiết kế theo mô hình Clean Layered Architecture kết hợp State Management Riverpod 2 (Slide 14–18, 41):
+Hệ thống được thiết kế theo mô hình Clean Layered Architecture kết hợp State Management Riverpod 2/3:
 
 ```
 +-----------------------------------------------------------------------+
@@ -91,14 +89,14 @@ Do định dạng hóa đơn tại Việt Nam rất đa dạng (sử dụng cả
 | **1. On-Device OCR & Heuristics** | **3.5 pts** | Tích hợp `google_mlkit_text_recognition`, `image_picker` chụp/chọn ảnh, lưu ảnh cục bộ `path_provider`, engine `ReceiptParser` chiết xuất chuẩn xác Tổng tiền, Ngày, Cửa hàng; kèm 5 bộ hóa đơn mẫu thực tế chạy thử nghiệm tức thì | Đạt tối đa (3.5/3.5) |
 | **2. Custom Canvas Visualization** | **2.5 pts** | Biểu đồ Donut Category Chart vẽ bằng `CustomPainter` (vòng cung arc động, `AnimationController`, tỷ lệ %); Biểu đồ cột Weekly Bar Chart 7 ngày bằng `CustomPainter` với đường gióng và nhãn | Đạt tối đa (2.5/2.5) |
 | **3. State Management & DB** | **2.0 pts** | Kiến trúc Riverpod 2 Notifier (`AsyncNotifierProvider`, `ExpenseListNotifier`), SQLite CRUD đầy đủ qua `sqflite`, hỗ trợ xóa vuốt `Dismissible`, lưu vết ảnh hóa đơn | Đạt tối đa (2.0/2.0) |
-| **4. UI/UX Polish** | **1.0 pt** | Material 3 themes với Seed Color VKU Navy `0xFF2C4570`, Dark Mode, Responsive (`SafeArea`, `Flex`), Form xác thực `GlobalKey<FormState>`, Widget `ExpenseSummaryCard` (Slide 45), MethodChannel Pin | Đạt tối đa (1.0/1.0) |
+| **4. UI/UX Polish** | **1.0 pt** | Material 3 themes với Seed Color VKU Navy `0xFF2C4570`, Dark Mode, Responsive (`SafeArea`, `Flex`), Form xác thực `GlobalKey<FormState>`, Widget `ExpenseSummaryCard`, MethodChannel Pin | Đạt tối đa (1.0/1.0) |
 | **5. Deliverables & Report** | **1.0 pt** | Kho mã nguồn chuẩn (`core/`, `models/`, `services/`, `state/`, `widgets/`, `screens/`), bài test đầy đủ passed 100%, tài liệu kỹ thuật PDF 2-4 trang | Đạt tối đa (1.0/1.0) |
 | **TỔNG ĐIỂM** | **10.0 / 10.0** | Hoàn thành xuất sắc tất cả yêu cầu đề ra | **10.0 pts** |
 
 ---
 
-## 5. THỰC HIỆN NATIVE PLATFORM CHANNEL (SLIDE 37-39)
-Theo yêu cầu bài giảng Tuần 8, dự án đã hiện thực kênh giao tiếp nhị phân bất đồng bộ `MethodChannel`:
+## 5. HIỆN THỰC NATIVE PLATFORM CHANNEL
+Dự án đã hiện thực kênh giao tiếp nhị phân bất đồng bộ `MethodChannel`:
 - **Dart side (`lib/services/platform_service.dart`):**
   ```dart
   static const platform = MethodChannel('vn.edu.vku/device_info');
