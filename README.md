@@ -3,7 +3,6 @@
 > **Trường:** Đại học Công nghệ Thông tin và Truyền thông Việt - Hàn (VKU), Đại học Đà Nẵng  
 > **Khoa:** Khoa Khoa học Máy tính  
 > **Giảng viên hướng dẫn:** TS. Nguyễn Thanh Tuấn  
-> **Sinh viên thực hiện:** **Nguyễn Minh Duy** — **MSSV:** **23IT038** (Lớp: 23IT)  
 > **Thời gian:** Tuần 7 - 8  
 > **Trọng số:** 10% (Mini-Project #3)  
 > **🌐 Trực Tuyến Miễn Phí (Cloudflare Pages):** [https://vku-expense-ocr.pages.dev](https://vku-expense-ocr.pages.dev)
