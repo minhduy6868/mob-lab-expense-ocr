@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// WeeklyBarChartPainter implemented using CustomPainter
-/// Directly draws custom coordinate geometry and animated bars onto Canvas
+/// Direct implementation of Week 8 Canvas Drawing
 class WeeklyBarChartPainter extends CustomPainter {
   final Map<int, double> weeklyData; // 1 (Mon) -> 7 (Sun)
   final double progress; // 0.0 -> 1.0
@@ -36,10 +36,10 @@ class WeeklyBarChartPainter extends CustomPainter {
     }
     if (maxVal == 0) maxVal = 100000; // Default scale if empty
 
-    // 1. Draw horizontal guide lines
+    // 1. Draw subtle horizontal guide lines
     final gridPaint = Paint()
       ..color = gridLineColor
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 0.8;
 
     for (int i = 0; i <= 3; i++) {
       final y = topMargin + chartHeight * (i / 3);
@@ -49,9 +49,7 @@ class WeeklyBarChartPainter extends CustomPainter {
     // 2. Draw 7 daily bars
     const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     final slotWidth = chartWidth / 7;
-    final barWidth = slotWidth * 0.45;
-
-    final barPaint = Paint()..style = PaintingStyle.fill;
+    final barWidth = slotWidth * 0.44;
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -66,26 +64,40 @@ class WeeklyBarChartPainter extends CustomPainter {
       // Compute animated bar height
       final barHeight = (amount / maxVal) * chartHeight * progress;
       final barTop = topMargin + (chartHeight - barHeight);
-      final barRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          xCenter - (barWidth / 2),
-          barTop,
-          barWidth,
-          max(barHeight, 4.0),
-        ),
-        const Radius.circular(6),
+      final barRect = Rect.fromLTWH(
+        xCenter - (barWidth / 2),
+        barTop,
+        barWidth,
+        max(barHeight, 4.0),
+      );
+      final rrect = RRect.fromRectAndCorners(
+        barRect,
+        topLeft: const Radius.circular(8),
+        topRight: const Radius.circular(8),
+        bottomLeft: const Radius.circular(3),
+        bottomRight: const Radius.circular(3),
       );
 
-      barPaint.color = isToday ? activeBarColor : barColor;
-      canvas.drawRRect(barRect, barPaint);
+      // Paint with vertical gradient for premium feel
+      final barPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..shader = LinearGradient(
+          colors: isToday
+              ? [activeBarColor, activeBarColor.withValues(alpha: 0.75)]
+              : [barColor, barColor.withValues(alpha: 0.4)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(barRect);
+
+      canvas.drawRRect(rrect, barPaint);
 
       // Draw day label text below bar
       textPainter.text = TextSpan(
         text: days[i - 1],
         style: TextStyle(
           color: isToday ? activeBarColor : labelColor,
-          fontSize: 11,
-          fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+          fontSize: 11.5,
+          fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
         ),
       );
       textPainter.layout(minWidth: slotWidth, maxWidth: slotWidth);
@@ -95,20 +107,20 @@ class WeeklyBarChartPainter extends CustomPainter {
       );
 
       // Draw small amount label if value exists and progress is near complete
-      if (amount > 0 && progress > 0.7) {
+      if (amount > 0 && progress > 0.75) {
         final amountText = _formatShortAmount(amount);
         textPainter.text = TextSpan(
           text: amountText,
           style: TextStyle(
-            color: labelColor,
-            fontSize: 9,
-            fontWeight: FontWeight.w600,
+            color: isToday ? activeBarColor : labelColor,
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
           ),
         );
-        textPainter.layout(minWidth: slotWidth + 10, maxWidth: slotWidth + 10);
+        textPainter.layout(minWidth: slotWidth + 12, maxWidth: slotWidth + 12);
         textPainter.paint(
           canvas,
-          Offset(xCenter - (textPainter.width / 2), max(barTop - 14, 2.0)),
+          Offset(xCenter - (textPainter.width / 2), max(barTop - 15, 2.0)),
         );
       }
     }

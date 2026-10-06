@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
@@ -34,8 +35,19 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chi tiết chi tiêu'),
+        title: const Text('Hóa Đơn Chi Tiêu'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Sao chép thông tin',
+            onPressed: () {
+              final text = 'Chi tiêu: ${expense.title}\nSố tiền: ${Formatters.formatVND(expense.amount)}\nNgày: ${Formatters.formatDateTime(expense.timestamp)}\nDanh mục: ${cat.displayName}';
+              Clipboard.setData(ClipboardData(text: text));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Đã sao chép chi tiết chi tiêu!')),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.edit_rounded),
             tooltip: 'Chỉnh sửa',
@@ -51,7 +63,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Xác nhận xóa'),
-                  content: Text('Bạn có chắc muốn xóa "${expense.title}"?'),
+                  content: Text('Bạn có chắc muốn xóa khoản chi "${expense.title}"?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
@@ -87,80 +99,151 @@ class ExpenseDetailScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Card
+              // 1. Digital Receipt Voucher Card
               Container(
-                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: cat.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: cat.color.withValues(alpha: 0.3)),
-                ),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: cat.color,
-                      child: Icon(cat.icon, color: Colors.white, size: 28),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      expense.title,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      Formatters.formatVND(expense.amount),
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Chip(
-                      label: Text(cat.displayName),
-                      backgroundColor: cat.color.withValues(alpha: 0.2),
-                      side: BorderSide.none,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
+                child: Column(
+                  children: [
+                    // Top Receipt Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      decoration: BoxDecoration(
+                        color: cat.color.withValues(alpha: 0.1),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: cat.color,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: cat.color.withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Icon(cat.icon, color: Colors.white, size: 30),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            expense.title,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 19,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            Formatters.formatVND(expense.amount),
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: theme.colorScheme.error,
+                              fontSize: 28,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: cat.color.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: cat.color,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  cat.displayName,
+                                  style: TextStyle(
+                                    color: cat.color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-              // Detail attributes
-              Card(
-                elevation: 0.8,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      _buildDetailRow(
-                        icon: Icons.calendar_today_rounded,
-                        label: 'Thời gian',
-                        value: Formatters.formatDateTime(expense.timestamp),
-                        theme: theme,
-                      ),
-                      const Divider(height: 24),
-                      _buildDetailRow(
-                        icon: Icons.tag_rounded,
-                        label: 'Mã giao dịch',
-                        value: expense.id,
-                        theme: theme,
-                      ),
-                      if (expense.note != null && expense.note!.isNotEmpty) ...[
-                        const Divider(height: 24),
-                        _buildDetailRow(
-                          icon: Icons.notes_rounded,
-                          label: 'Ghi chú',
-                          value: expense.note!,
-                          theme: theme,
+                    // Serrated separator line representation
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: List.generate(
+                          30,
+                          (index) => Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              height: 1.5,
+                              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+                            ),
+                          ),
                         ),
-                      ],
-                    ],
-                  ),
+                      ),
+                    ),
+
+                    // Receipt Attributes
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          _buildDetailRow(
+                            icon: Icons.calendar_today_rounded,
+                            label: 'Thời gian',
+                            value: Formatters.formatDateTime(expense.timestamp),
+                            theme: theme,
+                          ),
+                          const Divider(height: 24),
+                          _buildDetailRow(
+                            icon: Icons.tag_rounded,
+                            label: 'Mã giao dịch',
+                            value: expense.id,
+                            theme: theme,
+                          ),
+                          if (expense.note != null && expense.note!.isNotEmpty) ...[
+                            const Divider(height: 24),
+                            _buildDetailRow(
+                              icon: Icons.notes_rounded,
+                              label: 'Ghi chú',
+                              value: expense.note!,
+                              theme: theme,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -174,9 +257,9 @@ class ExpenseDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   child: Container(
-                    constraints: const BoxConstraints(maxHeight: 260),
+                    constraints: const BoxConstraints(maxHeight: 280),
                     width: double.infinity,
                     color: Colors.black12,
                     child: Image.file(
@@ -191,20 +274,20 @@ class ExpenseDetailScreen extends ConsumerWidget {
               // Raw OCR text section
               if (expense.rawOcrText != null && expense.rawOcrText!.isNotEmpty) ...[
                 Text(
-                  'Dữ liệu văn bản OCR',
+                  'Văn bản OCR nhận diện được',
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(12),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   child: SelectableText(
                     expense.rawOcrText!,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12, height: 1.4),
                   ),
                 ),
               ],
@@ -223,12 +306,13 @@ class ExpenseDetailScreen extends ConsumerWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
+        Icon(icon, size: 18, color: theme.colorScheme.primary),
+        const SizedBox(width: 10),
         Text(
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 13,
           ),
         ),
         const Spacer(),
@@ -236,7 +320,8 @@ class ExpenseDetailScreen extends ConsumerWidget {
           child: Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
             ),
             textAlign: TextAlign.end,
           ),

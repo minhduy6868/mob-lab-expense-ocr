@@ -42,7 +42,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
             // Theme Mode Section
             Card(
@@ -54,15 +54,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.palette_rounded, color: theme.colorScheme.primary),
-                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(Icons.palette_rounded, color: theme.colorScheme.primary, size: 20),
+                        ),
+                        const SizedBox(width: 12),
                         Text(
                           'Giao diện Material Design 3',
                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     SegmentedButton<ThemeMode>(
                       segments: const [
                         ButtonSegment(
@@ -95,34 +102,86 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Platform Channels Native Interop Card (Slide 37-39)
             Card(
               elevation: 0.8,
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  child: Icon(
-                    Icons.battery_charging_full_rounded,
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                title: const Text(
-                  'MethodChannel ("vn.edu.vku/device_info")',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                subtitle: Text(
-                  _isLoadingBattery
-                      ? 'Đang gọi Native Kotlin/Swift...'
-                      : (_batteryLevel != null && _batteryLevel! >= 0
-                          ? 'Dung lượng pin thiết bị: $_batteryLevel%'
-                          : 'Thiết bị mô phỏng / Không phản hồi pin'),
-                  style: TextStyle(
-                    color: (_batteryLevel != null && _batteryLevel! >= 0)
-                        ? Colors.green.shade700
-                        : theme.colorScheme.outline,
-                  ),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _checkBattery,
-                  tooltip: 'Kiểm tra lại Native Channel',
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.battery_charging_full_rounded,
+                                color: Color(0xFF10B981),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Native MethodChannel',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
+                                Text(
+                                  '"vn.edu.vku/device_info"',
+                                  style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20),
+                          onPressed: _checkBattery,
+                          tooltip: 'Đo lại pin thiết bị',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (_isLoadingBattery)
+                      const LinearProgressIndicator()
+                    else ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _batteryLevel != null && _batteryLevel! >= 0
+                                ? 'Pin thiết bị thật (Android Kotlin / iOS):'
+                                : 'Môi trường mô phỏng (Simulator/Web):',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          Text(
+                            _batteryLevel != null && _batteryLevel! >= 0
+                                ? '$_batteryLevel%'
+                                : '88% (Giả lập)',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: (_batteryLevel != null && _batteryLevel! >= 0)
+                              ? _batteryLevel! / 100.0
+                              : 0.88,
+                          backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                          color: const Color(0xFF10B981),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
@@ -134,18 +193,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 children: [
                   ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue.withValues(alpha: 0.15),
-                      child: const Icon(Icons.storage_rounded, color: Colors.blue),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.storage_rounded, color: Colors.blue, size: 20),
                     ),
-                    title: const Text('Cơ sở dữ liệu SQLite (sqflite)'),
-                    subtitle: const Text('Quản lý lưu trữ ngoại tuyến cục bộ'),
+                    title: const Text('Cơ sở dữ liệu SQLite (sqflite)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('Lưu trữ ngoại tuyến an toàn trên thiết bị'),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.restart_alt_rounded),
-                    title: const Text('Nạp lại dữ liệu mẫu VKU'),
-                    subtitle: const Text('Khôi phục danh sách hóa đơn Highlands, Co.op Mart...'),
+                    title: const Text('Nạp lại 7 hóa đơn mẫu VKU'),
+                    subtitle: const Text('Khôi phục mẫu Highlands, Co.op Mart, Petrolimex...'),
                     onTap: () async {
                       await ref.read(expenseListProvider.notifier).seedSampleData();
                       if (context.mounted) {
@@ -158,10 +221,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     leading: Icon(Icons.delete_forever_rounded, color: theme.colorScheme.error),
                     title: Text(
-                      'Xóa sạch toàn bộ dữ liệu',
+                      'Xóa sạch toàn bộ dữ liệu SQLite',
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
-                    subtitle: const Text('Xóa toàn bộ các bảng trong SQLite'),
+                    subtitle: const Text('Xóa toàn bộ các bảng trong cơ sở dữ liệu'),
                     onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
@@ -192,9 +255,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Project & Academic Info Card
+            // Academic & Project Info Card
             Card(
               elevation: 0.8,
               child: Padding(
@@ -202,19 +265,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Thông tin đồ án Mini-Project #3',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDC2626).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.school_rounded, color: Color(0xFFDC2626), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Đồ án Mini-Project #3 (Tuần 7 - 8)',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     const Text('Học phần: Phát triển ứng dụng di động đa nền tảng'),
-                    const Text('Đơn vị: Trường ĐH CNTT & TT Việt - Hàn (VKU)'),
+                    const Text('Khoa: Khoa Khoa học Máy tính - VKU Đà Nẵng'),
                     const Text('Giảng viên hướng dẫn: TS. Nguyễn Thanh Tuấn'),
-                    const Text('Thời lượng: Tuần 7 - 8 (Trọng số: 10%)'),
                     const Divider(height: 20),
-                    const Text(
-                      'Công nghệ cốt lõi: Flutter 3.x, Dart 3 (Records, Pattern Matching), Google ML Kit Text Recognition, SQLite sqflite, Riverpod 2 Notifier, CustomPainter Animated Donut & Bar Charts.',
-                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                    Row(
+                      children: [
+                        const Icon(Icons.public_rounded, size: 16, color: Colors.blue),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Live Web Demo: ',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        Text(
+                          'vku-expense-ocr.pages.dev',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

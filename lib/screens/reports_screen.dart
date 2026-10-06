@@ -61,6 +61,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
         title: const Text('Báo Cáo & Phân Tích Canvas'),
         bottom: TabBar(
           controller: _tabController,
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorWeight: 3,
           tabs: const [
             Tab(icon: Icon(Icons.pie_chart_rounded), text: 'Cơ Cấu Danh Mục'),
             Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Chi Tiêu Tuần Này'),
@@ -73,14 +75,69 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
           children: [
             // Tab 1: Animated Donut Category Chart (CustomPainter)
             SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 children: [
                   AnimatedDonutChart(
                     data: categoryData,
                     totalAmount: grandTotal,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
+
+                  // Smart Financial Insight Banner
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.tips_and_updates_rounded,
+                              color: theme.colorScheme.primary,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Gợi ý quản lý chi tiêu sinh viên VKU',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  topCategory != null
+                                      ? 'Khoản chi lớn nhất của bạn là "${topCategory!.displayName}" (${(maxCategoryAmount / (grandTotal > 0 ? grandTotal : 1) * 100).toStringAsFixed(0)}%). Chạm vào biểu đồ để kiểm tra chi tiết.'
+                                      : 'Hãy ghi lại hoặc quét thêm hóa đơn để nhận phân tích thông minh.',
+                                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Insight cards
                   Padding(
@@ -90,7 +147,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                         Expanded(
                           child: _buildMetricCard(
                             title: 'Chi nhiều nhất',
-                            value: topCategory != null ? topCategory!.displayName : 'Chưa có',
+                            value: topCategory != null ? topCategory!.displayName.split(' & ')[0] : 'Chưa có',
                             subtitle: topCategory != null
                                 ? Formatters.formatVND(maxCategoryAmount)
                                 : '0 đ',
@@ -102,10 +159,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildMetricCard(
-                            title: 'Trung bình/GD',
+                            title: 'Trung bình/giao dịch',
                             value: Formatters.formatVND(avgSpend),
-                            subtitle: '${expenses.length} giao dịch',
-                            color: theme.colorScheme.tertiary,
+                            subtitle: '${expenses.length} hóa đơn đã lưu',
+                            color: const Color(0xFF0D9488),
                             icon: Icons.trending_up_rounded,
                             theme: theme,
                           ),
@@ -141,8 +198,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                             Text(
                               Formatters.formatVND(weeklyTotal),
                               style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                                 color: theme.colorScheme.primary,
+                                fontSize: 22,
                               ),
                             ),
                           ],
@@ -153,12 +211,25 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                             color: theme.colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            'Tuần hiện tại',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onPrimaryContainer,
-                            ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Tuần hiện tại',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -180,11 +251,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.info_outline_rounded,
-                                    size: 18, color: theme.colorScheme.primary),
+                                Icon(Icons.speed_rounded,
+                                    size: 20, color: theme.colorScheme.primary),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Thông tin CustomPainter',
+                                  'Flutter CustomPainter & Impeller 120Hz',
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -193,9 +264,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Biểu đồ cột được vẽ bằng Flutter CustomPainter thuần, không dùng thư viện ngoài, tối ưu 120 FPS hardware acceleration với Impeller Engine.',
+                              'Đồ họa CustomPainter được vẽ trực tiếp lên GPU Canvas thông qua Impeller Rendering Engine, đảm bảo khung hình 120 FPS không giật lag và không phụ thuộc thư viện bên thứ ba.',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
+                                height: 1.4,
                               ),
                             ),
                           ],
@@ -221,7 +293,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
     required ThemeData theme,
   }) {
     return Card(
-      elevation: 1,
+      elevation: 0.8,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -253,7 +325,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
               subtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: color,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

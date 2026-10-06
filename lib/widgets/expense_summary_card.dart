@@ -3,7 +3,7 @@ import '../core/formatters.dart';
 import '../models/expense_category.dart';
 
 /// Reusable ExpenseSummaryCard widget
-/// Exactly adheres to Week 7 Slide 45 In-Class Lab Exercise:
+/// Adheres strictly to Week 7 Slide 45 In-Class Lab Exercise:
 /// 1. An icon inside a circular container indicating category.
 /// 2. Store name and date stacked vertically with CrossAxisAlignment.start.
 /// 3. Highlighted monetary amount formatted as Vietnamese Dong (###.### đ).
@@ -34,12 +34,12 @@ class ExpenseSummaryCard extends StatelessWidget {
     final categoryColor = category.color;
 
     return Card(
-      elevation: 1.5,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      elevation: 0.6,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
           width: 0.8,
         ),
       ),
@@ -48,33 +48,40 @@ class ExpenseSummaryCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         splashColor: categoryColor.withValues(alpha: 0.12),
-        highlightColor: categoryColor.withValues(alpha: 0.06),
+        highlightColor: categoryColor.withValues(alpha: 0.05),
         child: Padding(
-          padding: const EdgeInsets.all(14.0),
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // 1. Icon inside circular container indicating category
               Container(
-                width: 48,
-                height: 48,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: categoryColor.withValues(alpha: 0.15),
+                  gradient: LinearGradient(
+                    colors: [
+                      categoryColor.withValues(alpha: 0.22),
+                      categoryColor.withValues(alpha: 0.10),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: categoryColor.withValues(alpha: 0.35),
-                    width: 1.5,
+                    color: categoryColor.withValues(alpha: 0.3),
+                    width: 1.2,
                   ),
                 ),
                 child: Center(
                   child: Icon(
                     category.icon,
                     color: categoryColor,
-                    size: 24,
+                    size: 22,
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
               // 2. Store name and date stacked vertically with CrossAxisAlignment.start
               Expanded(
@@ -85,7 +92,8 @@ class ExpenseSummaryCard extends StatelessWidget {
                     Text(
                       merchant,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
                         letterSpacing: -0.2,
                       ),
                       maxLines: 1,
@@ -94,32 +102,50 @@ class ExpenseSummaryCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 13,
-                          color: theme.colorScheme.onSurfaceVariant,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: categoryColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            category.displayName.split(' & ')[0],
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: categoryColor,
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.schedule_rounded,
+                          size: 11,
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        ),
+                        const SizedBox(width: 3),
                         Text(
                           Formatters.formatDate(date),
                           style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        if (note != null && note!.isNotEmpty) ...[
-                          const SizedBox(width: 6),
-                          Text(
-                            '•  $note',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.outline,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
                       ],
                     ),
+                    if (note != null && note!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        note!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.outline,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -130,14 +156,19 @@ class ExpenseSummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer.withValues(alpha: 0.25),
+                  color: theme.colorScheme.errorContainer.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: theme.colorScheme.error.withValues(alpha: 0.2),
+                    width: 0.8,
+                  ),
                 ),
                 child: Text(
                   Formatters.formatVND(amount),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.error,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
                     letterSpacing: -0.3,
                   ),
                 ),

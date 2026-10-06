@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
@@ -143,12 +144,12 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Chỉnh sửa chi tiêu' : 'Kiểm tra & Xác nhận OCR'),
+        title: Text(isEditing ? 'Chỉnh Sửa Chi Tiêu' : 'Kiểm Tra & Xác Nhận OCR'),
         actions: [
           TextButton.icon(
             onPressed: _submitForm,
-            icon: const Icon(Icons.check_circle_outline),
-            label: const Text('Lưu'),
+            icon: const Icon(Icons.check_circle_rounded),
+            label: const Text('Lưu lại', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -161,32 +162,55 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Confidence badge if parsed from OCR
+                // Confidence badge card
                 if (!isEditing && widget.initialParsedReceipt != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: confidence > 0.7
-                          ? Colors.green.withValues(alpha: 0.12)
-                          : Colors.orange.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: confidence > 0.7
+                            ? [const Color(0xFF10B981).withValues(alpha: 0.15), const Color(0xFF047857).withValues(alpha: 0.08)]
+                            : [const Color(0xFFF59E0B).withValues(alpha: 0.15), const Color(0xFFB45309).withValues(alpha: 0.08)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: confidence > 0.7 ? Colors.green : Colors.orange,
-                        width: 1,
+                        color: confidence > 0.7 ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                        width: 1.2,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          confidence > 0.7 ? Icons.verified : Icons.warning_amber_rounded,
-                          color: confidence > 0.7 ? Colors.green : Colors.orange,
-                          size: 20,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: confidence > 0.7 ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            'Độ tin cậy OCR: ${(confidence * 100).toInt()}% • Vui lòng kiểm tra kỹ số tiền',
-                            style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Độ tin cậy OCR AI: ${(confidence * 100).toInt()}%',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  color: confidence > 0.7 ? const Color(0xFF047857) : const Color(0xFFB45309),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Các trường đã được tự động điền qua Heuristics Regex. Bạn có thể kiểm tra và chỉnh sửa trước khi lưu.',
+                                style: theme.textTheme.bodySmall?.copyWith(fontSize: 11.5),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -198,7 +222,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 // Thumbnail preview if image attached
                 if (_imagePath != null && File(_imagePath!).existsSync()) ...[
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
                       height: 160,
                       color: Colors.black12,
@@ -218,9 +242,9 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                   focusNode: _merchantFocus,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    labelText: 'Tên cửa hàng / Đơn vị bán',
+                    labelText: 'Tên cửa hàng / Đơn vị cung cấp',
                     prefixIcon: const Icon(Icons.storefront_rounded),
-                    helperText: 'Trích xuất tự động từ đầu hóa đơn',
+                    helperText: 'Tự động trích xuất từ tiêu đề hóa đơn',
                   ),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên cửa hàng' : null,
@@ -237,9 +261,9 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: 'Tổng tiền thanh toán (VNĐ)',
-                    prefixIcon: const Icon(Icons.attach_money_rounded),
+                    prefixIcon: const Icon(Icons.payments_rounded),
                     suffixText: 'VNĐ',
-                    helperText: 'Kiểm tra đúng tổng số tiền trên hóa đơn',
+                    helperText: 'Số tiền cuối cùng cần thanh toán',
                   ),
                   validator: (v) {
                     final clean = v?.replaceAll(',', '').replaceAll('.', '') ?? '';
@@ -256,47 +280,88 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 // Date Picker row
                 InkWell(
                   onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: 'Ngày giao dịch',
-                      prefixIcon: Icon(Icons.calendar_today_rounded),
+                      prefixIcon: Icon(Icons.calendar_month_rounded),
                     ),
-                    child: Text(
-                      Formatters.formatDate(_selectedDate),
-                      style: theme.textTheme.bodyMedium,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          Formatters.formatDate(_selectedDate),
+                          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const Icon(Icons.arrow_drop_down_rounded),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 // Category Selection
-                Text(
-                  'Danh mục chi tiêu',
-                  style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Danh mục chi tiêu',
+                      style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _selectedCategory.displayName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _selectedCategory.color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: ExpenseCategory.values.map((cat) {
                     final isSelected = _selectedCategory == cat;
-                    return ChoiceChip(
-                      label: Text(cat.displayName),
-                      avatar: Icon(cat.icon, size: 16, color: isSelected ? Colors.white : cat.color),
-                      selected: isSelected,
-                      selectedColor: cat.color,
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => setState(() => _selectedCategory = cat),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? cat.color : cat.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? cat.color : cat.color.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              cat.icon,
+                              size: 16,
+                              color: isSelected ? Colors.white : cat.color,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              cat.displayName.split(' & ')[0],
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      onSelected: (selected) {
-                        if (selected) setState(() => _selectedCategory = cat);
-                      },
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 // Note Field
                 TextFormField(
@@ -306,39 +371,66 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Ghi chú thêm (tùy chọn)',
                     prefixIcon: Icon(Icons.notes_rounded),
-                    hintText: 'Ví dụ: Đóng tiền phòng, ăn trưa với bạn...',
+                    hintText: 'Ví dụ: Đóng quỹ lớp, ăn trưa với bạn bè VKU...',
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 // Raw OCR Text Inspector (Slide 41)
                 if (_rawOcrText != null && _rawOcrText!.isNotEmpty) ...[
-                  ExpansionTile(
-                    title: const Text(
-                      'Xem dữ liệu OCR thô (Raw OCR Text)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    leading: const Icon(Icons.data_object_rounded),
-                    initiallyExpanded: _showRawOcr,
-                    onExpansionChanged: (val) => setState(() => _showRawOcr = val),
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: theme.colorScheme.outlineVariant),
-                        ),
-                        child: SelectableText(
-                          _rawOcrText!,
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
+                  Card(
+                    elevation: 0.6,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    child: ExpansionTile(
+                      shape: const Border(),
+                      title: const Text(
+                        'Xem dữ liệu OCR thô (Raw Text Inspector)',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                      ),
+                      leading: const Icon(Icons.data_object_rounded, size: 20),
+                      initiallyExpanded: _showRawOcr,
+                      onExpansionChanged: (val) => setState(() => _showRawOcr = val),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(text: _rawOcrText!));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Đã sao chép văn bản OCR!')),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.copy_rounded, size: 16),
+                                  label: const Text('Sao chép'),
+                                ),
+                              ),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                                ),
+                                child: SelectableText(
+                                  _rawOcrText!,
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 11.5,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -346,13 +438,16 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 // Submit Button (Slide 28)
                 FilledButton.icon(
                   onPressed: _submitForm,
-                  icon: const Icon(Icons.save_rounded),
+                  icon: const Icon(Icons.check_circle_rounded),
                   label: Text(
-                    isEditing ? 'Lưu thay đổi' : 'Xác nhận & Lưu vào SQLite',
+                    isEditing ? 'Lưu Thay Đổi' : 'Xác Nhận & Lưu Vào SQLite',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ],
