@@ -1,0 +1,31 @@
+package vn.edu.vku.vku_expense_ocr
+
+import android.content.Context
+import android.os.BatteryManager
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+class MainActivity : FlutterActivity() {
+    private val CHANNEL = "vn.edu.vku/device_info"
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+            .setMethodCallHandler { call, result ->
+                if (call.method == "getBatteryLevel") {
+                    val bm = getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
+                    val batteryLevel = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1
+                    if (batteryLevel != -1) {
+                        result.success(batteryLevel)
+                    } else {
+                        // Fallback simulated battery percentage for emulator/unsupported
+                        result.success(88)
+                    }
+                } else {
+                    result.notImplemented()
+                }
+            }
+    }
+}
+
