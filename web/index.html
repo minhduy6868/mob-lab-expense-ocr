@@ -5,13 +5,13 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="VKU Expense OCR - Trình quản lý chi tiêu và quét hóa đơn AI thông minh cho sinh viên VKU.">
-  <meta name="theme-color" content="#0F172A">
+  <meta name="description" content="VKU Ledger: sổ chi tiêu hóa đơn cho sinh viên VKU, đồng bộ Cloudflare D1.">
+  <meta name="theme-color" content="#102343">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="VKU Expense OCR">
+  <meta name="apple-mobile-web-app-title" content="VKU Ledger">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -22,14 +22,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <title>VKU Expense OCR — Smart Receipt Scanner & Analytics</title>
+  <title>VKU Ledger</title>
   <link rel="manifest" href="manifest.json">
 
   <style>
     body {
       margin: 0;
       padding: 0;
-      background-color: #0B0F19;
+      background-color: #102343;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     #loading-container {
@@ -39,39 +39,44 @@
       align-items: center;
       height: 100vh;
       width: 100vw;
-      background: radial-gradient(circle at center, #1E293B 0%, #0B0F19 100%);
-      color: #F8FAFC;
+      background: #102343;
+      color: #F4F0E6;
     }
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid rgba(56, 189, 248, 0.2);
-      border-top-color: #38BDF8;
-      border-radius: 50%;
-      animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    .brand-mark {
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .brand-kicker {
+      margin-top: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      color: #E8A317;
     }
     .brand-title {
-      margin-top: 18px;
-      font-size: 19px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      color: #38BDF8;
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: #F4F0E6;
     }
     .brand-sub {
       margin-top: 6px;
-      font-size: 12px;
-      color: #94A3B8;
+      font-size: 14px;
+      color: rgba(244, 240, 230, 0.78);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brand-mark { transition: none; }
     }
   </style>
 </head>
 <body>
   <div id="loading-container">
-    <div class="spinner"></div>
-    <div class="brand-title">VKU Expense OCR</div>
-    <div class="brand-sub">Đang khởi tạo Impeller Engine & Riverpod...</div>
+    <img class="brand-mark" src="splash_mark.png" alt="" width="96" height="96">
+    <div class="brand-kicker">VKU ĐÀ NẴNG</div>
+    <div class="brand-title">VKU Ledger</div>
+    <div class="brand-sub">Sổ chi tiêu hóa đơn</div>
   </div>
 
   <script>

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router.dart';
 import 'core/theme.dart';
+import 'services/database_helper.dart';
 import 'state/expense_providers.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper.instance.init();
   runApp(
     // Mount Riverpod ProviderScope at root of widget tree (Slide 10 & 14)
     const ProviderScope(
@@ -22,7 +24,7 @@ class VKUExpenseApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'VKU Expense OCR',
+      title: 'VKU Ledger',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

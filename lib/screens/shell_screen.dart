@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/theme.dart';
+
 /// ShellScreen provides the modern Floating Glassmorphic Dock Navigation Bar
 class ShellScreen extends StatelessWidget {
   final Widget child;
@@ -184,17 +186,12 @@ class ShellScreen extends StatelessWidget {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isSelected
-                ? [const Color(0xFF0284C7), const Color(0xFF0369A1)]
-                : [theme.colorScheme.primary, const Color(0xFF2563EB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.gold,
           borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: AppColors.navy, width: 1.4) : null,
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              color: AppColors.gold.withValues(alpha: 0.35),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -203,14 +200,15 @@ class ShellScreen extends StatelessWidget {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.document_scanner_rounded, color: Colors.white, size: 20),
+            Icon(Icons.document_scanner_rounded, color: AppColors.navy, size: 20),
             SizedBox(width: 6),
             Text(
-              'Quét OCR',
+              'Quét',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.navy,
                 fontWeight: FontWeight.w800,
                 fontSize: 12.5,
+                height: 1.2,
               ),
             ),
           ],

@@ -4,13 +4,34 @@ import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../services/database_helper.dart';
 
+final cloudSyncProvider = NotifierProvider<CloudSyncNotifier, CloudSyncStatus>(
+  CloudSyncNotifier.new,
+);
+
+class CloudSyncNotifier extends Notifier<CloudSyncStatus> {
+  @override
+  CloudSyncStatus build() => CloudSyncStatus.checking;
+
+  void apply(CloudSyncStatus status) => state = status;
+}
+
 // Riverpod 2 State Controller managing persistent SQLite CRUD (Slide 15 & 18)
 class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
   final DatabaseHelper _db = DatabaseHelper.instance;
 
   @override
   Future<List<ExpenseItem>> build() async {
-    return await _loadExpenses();
+    final items = await _loadExpenses();
+    _publishSync();
+    return items;
+  }
+
+  void _publishSync() {
+    final status = _db.lastStatus;
+    Future.microtask(() {
+      if (!ref.mounted) return;
+      ref.read(cloudSyncProvider.notifier).apply(status);
+    });
   }
 
   Future<List<ExpenseItem>> _loadExpenses() async {
@@ -32,6 +53,7 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       await _db.insertExpense(item);
+      _publishSync();
       return await _db.getAllExpenses();
     });
   }
@@ -40,6 +62,7 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       await _db.updateExpense(item);
+      _publishSync();
       return await _db.getAllExpenses();
     });
   }
@@ -51,9 +74,11 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
 
     try {
       await _db.deleteExpense(id);
+      _publishSync();
     } catch (e) {
       // Rollback on error
       state = AsyncValue.data(previousState);
+      _publishSync();
     }
   }
 
@@ -61,7 +86,17 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       await _db.clearAllExpenses();
+      _publishSync();
       return <ExpenseItem>[];
+    });
+  }
+
+  Future<void> refreshFromCloud() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final items = await _db.getAllExpenses();
+      _publishSync();
+      return items;
     });
   }
 
@@ -70,6 +105,7 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
     state = await AsyncValue.guard(() async {
       await _db.clearAllExpenses();
       await _seedInitialSamples();
+      _publishSync();
       return await _db.getAllExpenses();
     });
   }
@@ -142,9 +178,7 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
       ),
     ];
 
-    for (final item in samples) {
-      await _db.insertExpense(item);
-    }
+    await _db.upsertAll(samples);
   }
 }
 

@@ -8,10 +8,15 @@ import '../screens/reports_screen.dart';
 import '../screens/scan_receipt_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/shell_screen.dart';
+import '../screens/splash_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/dash',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
     // ShellRoute providing persistent NavigationBar (Slide 23)
     ShellRoute(
       builder: (context, state, child) => ShellScreen(child: child),

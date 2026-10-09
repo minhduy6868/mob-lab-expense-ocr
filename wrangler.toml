@@ -1,3 +1,8 @@
 name = "vku-expense-ocr"
 compatibility_date = "2026-10-01"
 pages_build_output_dir = "build/web"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vku-expense-db"
+database_id = "211c39d5-8bc4-404b-9011-f9d93add5dff"

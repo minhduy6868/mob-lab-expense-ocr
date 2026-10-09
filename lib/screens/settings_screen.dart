@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/database_helper.dart';
 import '../services/platform_service.dart';
 import '../state/expense_providers.dart';
 
@@ -35,6 +36,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final themeMode = ref.watch(themeModeProvider);
+    final sync = ref.watch(cloudSyncProvider);
+    final db = DatabaseHelper.instance;
 
     return Scaffold(
       appBar: AppBar(
@@ -187,7 +190,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 12),
 
-            // SQLite Database Management Card
             Card(
               elevation: 0.8,
               child: Column(
@@ -196,15 +198,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.12),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.storage_rounded, color: Colors.blue, size: 20),
+                      child: Icon(Icons.cloud_done_rounded, color: theme.colorScheme.primary, size: 20),
                     ),
-                    title: const Text('Cơ sở dữ liệu SQLite (sqflite)', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Lưu trữ ngoại tuyến an toàn trên thiết bị'),
+                    title: const Text('Cloudflare D1', style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${sync.detail}\nThiết bị ${db.deviceLabel}. Ảnh hóa đơn vẫn nằm trên máy.'),
+                    isThreeLine: true,
                   ),
                   const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.sync_rounded),
+                    title: const Text('Đồng bộ ngay'),
+                    subtitle: const Text('Đẩy sổ trên máy lên Cloudflare D1 và kéo bản mới nhất'),
+                    onTap: () async {
+                      await ref.read(expenseListProvider.notifier).refreshFromCloud();
+                      if (context.mounted) {
+                        final detail = DatabaseHelper.instance.lastStatus.detail;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(detail)),
+                        );
+                      }
+                    },
+                  ),
                   ListTile(
                     leading: const Icon(Icons.restart_alt_rounded),
                     title: const Text('Nạp lại 7 hóa đơn mẫu VKU'),
@@ -213,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       await ref.read(expenseListProvider.notifier).seedSampleData();
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text(' Đã nạp lại dữ liệu mẫu thành công!')),
+                          const SnackBar(content: Text('Đã nạp lại 7 hóa đơn mẫu.')),
                         );
                       }
                     },
@@ -221,10 +238,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     leading: Icon(Icons.delete_forever_rounded, color: theme.colorScheme.error),
                     title: Text(
-                      'Xóa sạch toàn bộ dữ liệu SQLite',
+                      'Xóa sạch sổ chi',
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
-                    subtitle: const Text('Xóa toàn bộ các bảng trong cơ sở dữ liệu'),
+                    subtitle: const Text('Xóa trên máy và trên Cloudflare D1'),
                     onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,

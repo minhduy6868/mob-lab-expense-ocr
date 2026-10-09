@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+class AppColors {
+  static const Color navy = Color(0xFF1E3A8A);
+  static const Color splash = Color(0xFF102343);
+  static const Color gold = Color(0xFFE8A317);
+  static const Color goldInk = Color(0xFF7A5A10);
+  static const Color paper = Color(0xFFF4F0E6);
+  static const Color night = Color(0xFF10151F);
+}
+
 class AppTheme {
   // VKU Navy Seed Color from Lecture Slide 32
-  static const Color vkuNavy = Color(0xFF1E3A8A); // Deep Navy
-  static const Color vkuGold = Color(0xFFF59E0B); // Amber / Gold
-  static const Color vkuRed = Color(0xFFDC2626);  // Accent Crimson
+  static const Color vkuNavy = AppColors.navy;
+  static const Color vkuGold = AppColors.gold;
+  static const Color vkuRed = Color(0xFFDC2626);
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
@@ -13,11 +22,11 @@ class AppTheme {
       seedColor: vkuNavy,
       brightness: Brightness.light,
       primary: const Color(0xFF1E3A8A),
-      secondary: const Color(0xFF0D9488),
+      secondary: AppColors.gold,
       surface: const Color(0xFFF8FAFC),
     ),
     scaffoldBackgroundColor: const Color(0xFFF1F5F9),
-    textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+    textTheme: _textTheme(Brightness.light),
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
@@ -84,11 +93,11 @@ class AppTheme {
       seedColor: vkuNavy,
       brightness: Brightness.dark,
       primary: const Color(0xFF60A5FA),
-      secondary: const Color(0xFF2DD4BF),
+      secondary: const Color(0xFFE0B15A),
       surface: const Color(0xFF0F172A),
     ),
-    scaffoldBackgroundColor: const Color(0xFF0B0F19),
-    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+    scaffoldBackgroundColor: AppColors.night,
+    textTheme: _textTheme(Brightness.dark),
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
@@ -148,4 +157,17 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
   );
+
+  static TextTheme _textTheme(Brightness brightness) {
+    final base = GoogleFonts.interTextTheme(
+      brightness == Brightness.dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
+    );
+    return base.copyWith(
+      headlineSmall: base.headlineSmall?.copyWith(height: 1.2, letterSpacing: -0.3, fontWeight: FontWeight.w800),
+      titleMedium: base.titleMedium?.copyWith(height: 1.25, fontWeight: FontWeight.w700),
+      bodyMedium: base.bodyMedium?.copyWith(height: 1.45),
+      bodySmall: base.bodySmall?.copyWith(height: 1.4),
+      labelLarge: base.labelLarge?.copyWith(height: 1.2, fontWeight: FontWeight.w700),
+    );
+  }
 }

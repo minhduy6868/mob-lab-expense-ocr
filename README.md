@@ -21,7 +21,7 @@ Hệ thống loại bỏ hoàn toàn việc nhập liệu thủ công bằng cá
 * **Camera & Media:** `image_picker: ^1.2.1`, lưu trữ ảnh hóa đơn cục bộ qua `path_provider`.
 * **State Management:** `flutter_riverpod: ^3.3.2` (Kiến trúc Riverpod 2 Notifier, `AsyncNotifierProvider`, `ConsumerWidget`, `ref.watch`).
 * **Declarative Routing:** `go_router: ^17.0.0` (`ShellRoute` persistent navigation bar, `/expense/:id` path parameters).
-* **Local Database:** `sqflite: ^2.4.2` (SQLite CRUD, transaction aggregation, `Dismissible` swipe-to-delete).
+* **Cloud Database:** Cloudflare D1 qua Pages Function `functions/api/[[path]].js`. Mỗi máy một khóa `X-Device-Id`. SQLite (`sqflite`) giữ bản sao khi mất mạng.
 * **Custom Graphics:** Flutter Canvas `CustomPainter` & `AnimationController` (Animated Donut Category Chart & Weekly Bar Chart).
 * **Native Platform Channels:** `MethodChannel("vn.edu.vku/device_info")` kết nối Kotlin Android `MainActivity.kt`.
 * **Design System:** Material Design 3 (`useMaterial3: true`, Seed color VKU Navy `0xFF2C4570`, Dark Mode).
@@ -91,6 +91,30 @@ vku_expense_ocr/
 | **TỔNG** | | | **HOÀN THÀNH TOÀN DIỆN** | **10.0 / 10.0** |
 
 ---
+
+## Cloudflare D1
+
+Sổ chi trên mây nằm ở Pages Function `functions/api/[[path]].js`. App gửi header `X-Device-Id` (tạo một lần trên máy) nên mỗi cài đặt có sổ riêng. Khi mất mạng, SQLite trên điện thoại hoặc bộ nhớ web vẫn giữ bản sao và đẩy lên khi có mạng lại.
+
+```bash
+npx wrangler d1 create vku-expense-db
+```
+
+Bỏ comment khối `d1_databases` trong `wrangler.toml`, dán `database_id`, rồi:
+
+```bash
+npx wrangler d1 execute vku-expense-db --remote --file=schema.sql
+flutter build web
+npx wrangler pages deploy build/web --project-name vku-expense-ocr
+```
+
+API mặc định là `https://vku-expense-ocr.pages.dev`. Đổi host lúc chạy:
+
+```bash
+flutter run --dart-define=D1_API_BASE=https://your-host.pages.dev
+```
+
+Ảnh hóa đơn không đưa lên D1. Chỉ các dòng chi tiêu (tên, số tiền, danh mục, chữ OCR) được đồng bộ.
 
 ## ⚡️ Hướng Dẫn Cài Đặt & Chạy Ứng Dụng (Quick Start)
 

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
+import '../core/theme.dart';
 import '../models/expense_category.dart';
+import '../services/database_helper.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
 
@@ -26,6 +28,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     final grandTotal = ref.watch(grandTotalProvider);
     final selectedCategory = ref.watch(selectedCategoryFilterProvider);
     final currentQuery = ref.watch(searchQueryProvider);
+    final sync = ref.watch(cloudSyncProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -38,78 +41,45 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1E3A8A), Color(0xFF0284C7)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'VKU',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              letterSpacing: 0.5,
-                            ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/brand/icon.png',
+                            width: 44,
+                            height: 44,
+                            semanticLabel: 'Logo VKU Ledger',
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Chào bạn, Sinh viên VKU! 👋',
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14.5,
+                                'VKU Ledger',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                sync.detail,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: sync.phase == CloudSyncPhase.synced
+                                      ? (isDark ? AppColors.gold : AppColors.goldInk)
+                                      : theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF10B981),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                'Học kỳ 1 • Quản lý chi tiêu AI',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   Row(
                     children: [
@@ -234,6 +204,15 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
+                        Container(
+                          width: 48,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.gold,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
 
                         // Large balance figure
                         Text(
@@ -247,38 +226,29 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Action dock inside card
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildHeroAction(
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final stacked = constraints.maxWidth < 360;
+                            final actions = [
+                              _buildHeroAction(
                                 icon: Icons.document_scanner_rounded,
-                                label: 'Quét AI',
+                                label: 'Quét hóa đơn',
                                 isPrimary: true,
                                 onTap: () => context.push('/scan'),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHeroAction(
+                              _buildHeroAction(
                                 icon: Icons.edit_note_rounded,
                                 label: 'Nhập tay',
                                 isPrimary: false,
                                 onTap: () => context.push('/review'),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHeroAction(
+                              _buildHeroAction(
                                 icon: Icons.insights_rounded,
                                 label: 'Biểu đồ',
                                 isPrimary: false,
                                 onTap: () => context.go('/reports'),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHeroAction(
+                              _buildHeroAction(
                                 icon: Icons.restart_alt_rounded,
                                 label: 'Nạp mẫu',
                                 isPrimary: false,
@@ -286,13 +256,42 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                                   await ref.read(expenseListProvider.notifier).seedSampleData();
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Đã nạp 7 hóa đơn mẫu thực tế!')),
+                                      const SnackBar(content: Text('Đã nạp 7 hóa đơn mẫu.')),
                                     );
                                   }
                                 },
                               ),
-                            ),
-                          ],
+                            ];
+                            if (!stacked) {
+                              return Row(
+                                children: [
+                                  for (var i = 0; i < actions.length; i++) ...[
+                                    if (i > 0) const SizedBox(width: 8),
+                                    Expanded(child: actions[i]),
+                                  ],
+                                ],
+                              );
+                            }
+                            return Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: actions[0]),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: actions[1]),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(child: actions[2]),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: actions[3]),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -344,7 +343,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
 
             // Category Filter Pills
             SizedBox(
-              height: 38,
+              height: 48,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -387,45 +386,14 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
               child: asyncExpenses.when(
                 data: (_) {
                   if (filteredItems.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.receipt_long_outlined,
-                                size: 40,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Chưa có khoản chi tiêu nào',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              currentQuery.isNotEmpty
-                                  ? 'Không tìm thấy kết quả phù hợp với "$currentQuery"'
-                                  : 'Nhấn "Quét AI" để bóc tách hóa đơn tự động qua camera',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return _LedgerMessage(
+                      icon: Icons.receipt_long_outlined,
+                      title: currentQuery.isNotEmpty ? 'Không thấy khoản nào' : 'Sổ chi đang trống',
+                      body: currentQuery.isNotEmpty
+                          ? 'Thử từ khóa khác, hoặc xóa bộ lọc.'
+                          : 'Quét một hóa đơn để ghi khoản chi đầu tiên.',
+                      actionLabel: currentQuery.isNotEmpty ? null : 'Quét hóa đơn',
+                      onAction: currentQuery.isNotEmpty ? null : () => context.push('/scan'),
                     );
                   }
 
@@ -513,8 +481,14 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('Lỗi tải dữ liệu: $err')),
+                loading: () => const _LedgerSkeleton(),
+                error: (err, stack) => _LedgerMessage(
+                  icon: Icons.cloud_off_rounded,
+                  title: 'Không tải được sổ chi',
+                  body: 'Kiểm tra mạng rồi thử lại. Bản trên máy vẫn được giữ.',
+                  actionLabel: 'Thử lại',
+                  onAction: () => ref.invalidate(expenseListProvider),
+                ),
               ),
             ),
           ],
@@ -535,7 +509,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          color: isPrimary ? Colors.white : Colors.white.withValues(alpha: 0.16),
+          color: isPrimary ? AppColors.gold : Colors.white.withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(14),
           border: isPrimary ? null : Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.8),
         ),
@@ -545,20 +519,96 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
             Icon(
               icon,
               size: 19,
-              color: isPrimary ? const Color(0xFF1E3A8A) : Colors.white,
+              color: isPrimary ? AppColors.navy : Colors.white,
             ),
             const SizedBox(height: 3),
             Text(
               label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                color: isPrimary ? const Color(0xFF1E3A8A) : Colors.white,
+                color: isPrimary ? AppColors.navy : Colors.white,
                 fontWeight: FontWeight.w800,
                 fontSize: 11,
+                height: 1.2,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LedgerMessage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String body;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _LedgerMessage({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: theme.colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 16),
+              FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LedgerSkeleton extends StatelessWidget {
+  const _LedgerSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = Theme.of(context).colorScheme.surfaceContainerHighest;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        for (var i = 0; i < 4; i++) ...[
+          Container(
+            height: 76,
+            decoration: BoxDecoration(
+              color: tone,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ],
     );
   }
 }
