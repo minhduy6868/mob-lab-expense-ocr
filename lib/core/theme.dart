@@ -118,7 +118,9 @@ class AppTheme {
       onPrimary: AppColors.splash,
       secondary: const Color(0xFFE0B15A),
       onSecondary: AppColors.splash,
-      surface: const Color(0xFF0F172A),
+      surface: const Color(0xFF152033),
+      onSurface: AppColors.paper,
+      onSurfaceVariant: const Color(0xFFD7D1C6),
     ),
     scaffoldBackgroundColor: Colors.transparent,
     textTheme: _textTheme(Brightness.dark),
@@ -190,7 +192,9 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF1E293B),
+      fillColor: const Color(0xFF243044),
+      hintStyle: GoogleFonts.inter(color: const Color(0xFFD7D1C6), height: 1.4),
+      labelStyle: GoogleFonts.inter(color: AppColors.paper),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFF475569)),
@@ -211,12 +215,15 @@ class AppTheme {
     final base = GoogleFonts.interTextTheme(
       brightness == Brightness.dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
     );
+    final ink = brightness == Brightness.dark ? AppColors.paper : const Color(0xFF0F172A);
+    final muted = brightness == Brightness.dark ? const Color(0xFFD7D1C6) : const Color(0xFF475569);
     return base.copyWith(
-      headlineSmall: base.headlineSmall?.copyWith(height: 1.2, letterSpacing: -0.3, fontWeight: FontWeight.w800),
-      titleMedium: base.titleMedium?.copyWith(height: 1.25, fontWeight: FontWeight.w700),
-      bodyMedium: base.bodyMedium?.copyWith(height: 1.45),
-      bodySmall: base.bodySmall?.copyWith(height: 1.4),
-      labelLarge: base.labelLarge?.copyWith(height: 1.2, fontWeight: FontWeight.w700),
+      headlineMedium: base.headlineMedium?.copyWith(color: ink, height: 1.2, letterSpacing: -0.4, fontWeight: FontWeight.w800),
+      headlineSmall: base.headlineSmall?.copyWith(color: ink, height: 1.2, letterSpacing: -0.3, fontWeight: FontWeight.w800),
+      titleMedium: base.titleMedium?.copyWith(color: ink, height: 1.25, fontWeight: FontWeight.w700),
+      bodyMedium: base.bodyMedium?.copyWith(color: ink, height: 1.45),
+      bodySmall: base.bodySmall?.copyWith(color: muted, height: 1.4),
+      labelLarge: base.labelLarge?.copyWith(color: ink, height: 1.2, fontWeight: FontWeight.w700),
     );
   }
 }

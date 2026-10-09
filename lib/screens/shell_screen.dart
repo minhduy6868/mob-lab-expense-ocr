@@ -137,7 +137,7 @@ class ShellScreen extends StatelessWidget {
             Icon(
               isSelected ? activeIcon : icon,
               size: 22,
-              color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 2),
             Text(
@@ -145,7 +145,7 @@ class ShellScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                color: isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],

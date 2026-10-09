@@ -27,7 +27,7 @@ class LiquidBackdrop extends StatelessWidget {
           Positioned(
             top: -80,
             right: -40,
-            child: _orb(isDark ? AppColors.gold.withValues(alpha: 0.28) : AppColors.gold.withValues(alpha: 0.35), 220),
+            child: _orb(isDark ? AppColors.gold.withValues(alpha: 0.16) : AppColors.gold.withValues(alpha: 0.35), 220),
           ),
           Positioned(
             bottom: 80,
@@ -98,12 +98,14 @@ class GlassSurface extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: isDark ? 0.16 : 0.58),
-                Colors.white.withValues(alpha: isDark ? 0.05 : 0.28),
-              ],
+              colors: isDark
+                  ? const [Color(0xF21C2B46), Color(0xF0121C34)]
+                  : [
+                      Colors.white.withValues(alpha: 0.58),
+                      Colors.white.withValues(alpha: 0.28),
+                    ],
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.30 : 0.74)),
+            border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.38 : 0.74)),
           ),
           child: Stack(
             children: [

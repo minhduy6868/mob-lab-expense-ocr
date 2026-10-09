@@ -26,4 +26,4 @@ Tiếng Việt mặc định, chuyển được sang tiếng Anh. Câu ngắn, �
 - 2026-10-09: Cloudflare D1 là sổ trên mây, SQLite là bản trên máy. Mỗi cài đặt một khóa thiết bị.
 - 2026-10-09: Đăng nhập bằng tên và mật khẩu. Sổ gắn với tài khoản. Đăng xuất xóa bản trên máy.
 - 2026-10-09: Web có thẻ cài app: thêm vào màn hình chính, hoặc tải APK Android. Logo nằm trên splash, đăng nhập, cài đặt, và thẻ cài app.
-- 2026-10-09: Toàn app dùng kính lỏng: nền có vầng sáng, thẻ và thanh điều hướng mờ, viền sáng phía trên. Nút quét vẫn vàng. Splash giữ mặt navy đặc.
+- 2026-10-09: Kính tối đủ đặc để chữ kem đọc được. Nền vẫn có vầng sáng, nhưng thẻ không trong suốt đến mức mất chữ.
