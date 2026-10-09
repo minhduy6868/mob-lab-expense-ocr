@@ -38,7 +38,7 @@ vku_expense_ocr/
 ├── assets/                               # Mẫu hóa đơn & dữ liệu
 ├── docs/
 │   ├── Mini-Project-3-Technical-Report.md # Báo cáo kỹ thuật chi tiết
-│   ├── Mini-Project-3-Technical-Report.pdf# File PDF báo cáo 3 trang chuẩn mẫu
+│   ├── Mini-Project-3-Technical-Report.pdf# Báo cáo PDF nộp bài
 │   └── build_miniproj3_report.py         # Script tự động xuất PDF
 ├── lib/
 │   ├── core/
@@ -152,5 +152,5 @@ flutter run -d chrome
 ---
 
 ## 📊 Minh Chứng Báo Cáo Kỹ Thuật (Deliverables)
-* Báo cáo PDF chính thức: [docs/Mini-Project-3-Technical-Report.pdf](docs/Mini-Project-3-Technical-Report.pdf) (3 trang chuẩn form mẫu VKU).
+* Báo cáo PDF chính thức: [docs/Mini-Project-3-Technical-Report.pdf](docs/Mini-Project-3-Technical-Report.pdf).
 * Báo cáo định dạng Markdown: [docs/Mini-Project-3-Technical-Report.md](docs/Mini-Project-3-Technical-Report.md).
