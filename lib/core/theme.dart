@@ -114,8 +114,10 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: vkuNavy,
       brightness: Brightness.dark,
-      primary: const Color(0xFF60A5FA),
+      primary: const Color(0xFFE0B15A),
+      onPrimary: AppColors.splash,
       secondary: const Color(0xFFE0B15A),
+      onSecondary: AppColors.splash,
       surface: const Color(0xFF0F172A),
     ),
     scaffoldBackgroundColor: AppColors.night,
@@ -145,18 +147,18 @@ class AppTheme {
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       elevation: 4,
-      backgroundColor: const Color(0xFF3B82F6),
-      foregroundColor: Colors.white,
+      backgroundColor: AppColors.gold,
+      foregroundColor: AppColors.splash,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     navigationBarTheme: NavigationBarThemeData(
       elevation: 4,
       backgroundColor: const Color(0xFF111827),
-      indicatorColor: const Color(0xFF3B82F6).withValues(alpha: 0.25),
+      indicatorColor: AppColors.gold.withValues(alpha: 0.22),
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF60A5FA));
+          return GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold);
         }
         return GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xFF94A3B8));
       }),
@@ -171,6 +173,8 @@ class AppTheme {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
+        backgroundColor: AppColors.gold,
+        foregroundColor: AppColors.splash,
         minimumSize: const Size.fromHeight(48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: GoogleFonts.inter(fontWeight: FontWeight.w700, height: 1.2),
@@ -178,6 +182,7 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.gold,
         minimumSize: const Size.fromHeight(48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: GoogleFonts.inter(fontWeight: FontWeight.w700, height: 1.2),
@@ -196,7 +201,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.8),
+        borderSide: const BorderSide(color: AppColors.gold, width: 1.8),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
