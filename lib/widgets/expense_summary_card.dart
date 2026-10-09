@@ -156,20 +156,17 @@ class ExpenseSummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer.withValues(alpha: 0.22),
+                  color: theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: theme.colorScheme.error.withValues(alpha: 0.2),
-                    width: 0.8,
-                  ),
                 ),
                 child: Text(
                   Formatters.formatVND(amount),
                   style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.error,
+                    color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,
                     letterSpacing: -0.3,
+                    height: 1.2,
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -112,7 +113,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
         );
         ref.read(expenseListProvider.notifier).updateExpense(updated);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(' Đã cập nhật khoản chi!')),
+          const SnackBar(content: Text('Đã cập nhật khoản chi.')),
         );
       } else {
         // Add new expense
@@ -128,7 +129,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
         );
         ref.read(expenseListProvider.notifier).addExpense(newItem);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(' Đã lưu khoản chi từ hóa đơn!')),
+          const SnackBar(content: Text('Đã lưu khoản chi.')),
         );
       }
 
@@ -220,7 +221,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 ],
 
                 // Thumbnail preview if image attached
-                if (_imagePath != null && File(_imagePath!).existsSync()) ...[
+                if (!kIsWeb && _imagePath != null && File(_imagePath!).existsSync()) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
@@ -440,7 +441,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                   onPressed: _submitForm,
                   icon: const Icon(Icons.check_circle_rounded),
                   label: Text(
-                    isEditing ? 'Lưu Thay Đổi' : 'Xác Nhận & Lưu Vào SQLite',
+                    isEditing ? 'Lưu thay đổi' : 'Lưu vào sổ chi',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: FilledButton.styleFrom(

@@ -78,5 +78,12 @@ TỔNG TIỀN: 80.000 đ
       final date = DateTime(2026, 10, 22);
       expect(Formatters.formatDate(date), '22/10/2026');
     });
+
+    test('Groups today and yesterday relative to a fixed day', () {
+      final today = DateTime(2026, 10, 9);
+      expect(Formatters.formatDayGroup(DateTime(2026, 10, 9, 8), today: today), 'Hôm nay');
+      expect(Formatters.formatDayGroup(DateTime(2026, 10, 8, 21), today: today), 'Hôm qua');
+      expect(Formatters.formatDayGroup(DateTime(2026, 10, 5), today: today), 'Th 2, 05/10/2026');
+    });
   });
 }

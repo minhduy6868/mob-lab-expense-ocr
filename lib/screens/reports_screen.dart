@@ -58,7 +58,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Báo Cáo & Phân Tích Canvas'),
+        title: const Text('Báo cáo'),
         bottom: TabBar(
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.tab,
@@ -126,7 +126,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                                 const SizedBox(height: 3),
                                 Text(
                                   topCategory != null
-                                      ? 'Khoản chi lớn nhất của bạn là "${topCategory!.displayName}" (${(maxCategoryAmount / (grandTotal > 0 ? grandTotal : 1) * 100).toStringAsFixed(0)}%). Chạm vào biểu đồ để kiểm tra chi tiết.'
+                                      ? 'Khoản lớn nhất là ${topCategory!.displayName}, khoảng ${((maxCategoryAmount / (grandTotal > 0 ? grandTotal : 1)) * 100).toStringAsFixed(0)}% sổ chi.'
                                       : 'Hãy ghi lại hoặc quét thêm hóa đơn để nhận phân tích thông minh.',
                                   style: theme.textTheme.bodySmall?.copyWith(fontSize: 11.5),
                                 ),
@@ -162,7 +162,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                             title: 'Trung bình/giao dịch',
                             value: Formatters.formatVND(avgSpend),
                             subtitle: '${expenses.length} hóa đơn đã lưu',
-                            color: const Color(0xFF0D9488),
+                            color: theme.colorScheme.primary,
                             icon: Icons.trending_up_rounded,
                             theme: theme,
                           ),
@@ -189,7 +189,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Tổng chi tiêu 7 ngày qua',
+                              'Tuần này',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),

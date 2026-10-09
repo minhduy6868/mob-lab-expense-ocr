@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
 import '../core/theme.dart';
 import '../models/expense_category.dart';
+import '../models/expense_item.dart';
 import '../services/database_helper.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
@@ -18,6 +19,37 @@ class ExpenseListScreen extends ConsumerStatefulWidget {
 
 class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
   bool _isBalanceVisible = true;
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refreshLedger() {
+    return ref.read(expenseListProvider.notifier).refreshFromCloud();
+  }
+
+  List<Object> _groupRows(List<ExpenseItem> items) {
+    final rows = <Object>[];
+    String? lastLabel;
+    for (final item in items) {
+      final label = Formatters.formatDayGroup(item.timestamp);
+      if (label != lastLabel) {
+        rows.add(label);
+        lastLabel = label;
+      }
+      rows.add(item);
+    }
+    return rows;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +57,18 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final asyncExpenses = ref.watch(expenseListProvider);
     final filteredItems = ref.watch(filteredExpensesProvider);
-    final grandTotal = ref.watch(grandTotalProvider);
+    final weekTotal = ref.watch(weeklySpendingProvider).values.fold<double>(0, (sum, value) => sum + value);
     final selectedCategory = ref.watch(selectedCategoryFilterProvider);
     final currentQuery = ref.watch(searchQueryProvider);
     final sync = ref.watch(cloudSyncProvider);
+    final now = DateTime.now();
+    final allItems = asyncExpenses.value ?? [];
+    final filtering = currentQuery.trim().isNotEmpty || selectedCategory != null;
+    final monthItems = allItems.where(
+      (item) => item.timestamp.year == now.year && item.timestamp.month == now.month,
+    );
+    final shownItems = filtering ? filteredItems : monthItems;
+    final shownTotal = shownItems.fold<double>(0, (sum, item) => sum + item.amount);
 
     return Scaffold(
       body: SafeArea(
@@ -162,7 +202,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                             Row(
                               children: [
                                 Text(
-                                  'Tổng chi tiêu tháng này',
+                                  filtering ? 'Kết quả đang lọc' : 'Tổng chi tiêu tháng này',
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 12.5,
@@ -193,7 +233,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                                 border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 0.8),
                               ),
                               child: Text(
-                                '${filteredItems.length} hóa đơn',
+                                '${shownItems.length} hóa đơn',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
@@ -216,7 +256,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
 
                         // Large balance figure
                         Text(
-                          _isBalanceVisible ? Formatters.formatVND(grandTotal) : '•••••••• đ',
+                          _isBalanceVisible ? Formatters.formatVND(shownTotal) : '•••••••• đ',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 29,
@@ -224,6 +264,18 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                             letterSpacing: -0.8,
                           ),
                         ),
+                        if (!filtering) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'Tuần này ${Formatters.formatVND(weekTotal)}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.82),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 14),
 
                         LayoutBuilder(
@@ -317,6 +369,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                   ],
                 ),
                 child: TextField(
+                  controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Tìm kiếm cửa hàng, nội dung chi tiêu...',
                     hintStyle: TextStyle(
@@ -327,7 +380,10 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                     suffixIcon: currentQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.cancel_rounded, size: 18),
-                            onPressed: () => ref.read(searchQueryProvider.notifier).setQuery(''),
+                            onPressed: () {
+                              _searchController.clear();
+                              ref.read(searchQueryProvider.notifier).setQuery('');
+                            },
                           )
                         : null,
                     isDense: true,
@@ -385,23 +441,42 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
             Expanded(
               child: asyncExpenses.when(
                 data: (_) {
-                  if (filteredItems.isEmpty) {
-                    return _LedgerMessage(
-                      icon: Icons.receipt_long_outlined,
-                      title: currentQuery.isNotEmpty ? 'Không thấy khoản nào' : 'Sổ chi đang trống',
-                      body: currentQuery.isNotEmpty
-                          ? 'Thử từ khóa khác, hoặc xóa bộ lọc.'
-                          : 'Quét một hóa đơn để ghi khoản chi đầu tiên.',
-                      actionLabel: currentQuery.isNotEmpty ? null : 'Quét hóa đơn',
-                      onAction: currentQuery.isNotEmpty ? null : () => context.push('/scan'),
-                    );
-                  }
-
-                  return ListView.builder(
+                  final rows = _groupRows(filteredItems);
+                  return RefreshIndicator(
+                    onRefresh: _refreshLedger,
+                    child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.only(bottom: 20),
-                    itemCount: filteredItems.length,
+                    itemCount: rows.isEmpty ? 1 : rows.length,
                     itemBuilder: (context, index) {
-                      final item = filteredItems[index];
+                      if (rows.isEmpty) {
+                        return _LedgerMessage(
+                          icon: Icons.receipt_long_outlined,
+                          title: currentQuery.isNotEmpty || selectedCategory != null
+                              ? 'Không thấy khoản nào'
+                              : 'Sổ chi đang trống',
+                          body: currentQuery.isNotEmpty || selectedCategory != null
+                              ? 'Thử từ khóa khác, hoặc xóa bộ lọc.'
+                              : 'Quét một hóa đơn để ghi khoản chi đầu tiên.',
+                          actionLabel: currentQuery.isNotEmpty || selectedCategory != null ? null : 'Quét hóa đơn',
+                          onAction: currentQuery.isNotEmpty || selectedCategory != null
+                              ? null
+                              : () => context.push('/scan'),
+                        );
+                      }
+                      final row = rows[index];
+                      if (row is String) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+                          child: Text(
+                            row,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        );
+                      }
+                      final item = row as ExpenseItem;
 
                       return Dismissible(
                         key: ValueKey(item.id),
@@ -479,6 +554,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         ),
                       );
                     },
+                    ),
                   );
                 },
                 loading: () => const _LedgerSkeleton(),

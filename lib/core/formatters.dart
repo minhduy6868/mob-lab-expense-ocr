@@ -21,4 +21,14 @@ class Formatters {
     const days = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
     return days[date.weekday - 1];
   }
+
+  static String formatDayGroup(DateTime date, {DateTime? today}) {
+    final now = today ?? DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    final start = DateTime(now.year, now.month, now.day);
+    final diff = start.difference(day).inDays;
+    if (diff == 0) return 'Hôm nay';
+    if (diff == 1) return 'Hôm qua';
+    return '${formatDayOfWeek(date)}, ${formatDate(date)}';
+  }
 }

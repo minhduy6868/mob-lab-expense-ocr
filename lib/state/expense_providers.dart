@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../services/database_helper.dart';
@@ -261,16 +262,43 @@ final weeklySpendingProvider = Provider<Map<int, double>>((ref) {
 
 // Theme Mode Provider (Light / Dark / System)
 class ThemeModeNotifier extends Notifier<ThemeMode> {
-  @override
-  ThemeMode build() => ThemeMode.system;
+  static const _key = 'vku_theme_mode';
 
-  void setThemeMode(ThemeMode mode) {
+  @override
+  ThemeMode build() {
+    Future.microtask(_restore);
+    return ThemeMode.system;
+  }
+
+  Future<void> _restore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key);
+    if (!ref.mounted || raw == null) return;
+    state = _decode(raw);
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, _encode(mode));
   }
 
   void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    final next = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    setThemeMode(next);
   }
+
+  static String _encode(ThemeMode mode) => switch (mode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+      };
+
+  static ThemeMode _decode(String raw) => switch (raw) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
 }
 
 final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(

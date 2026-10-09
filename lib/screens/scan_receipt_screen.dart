@@ -16,7 +16,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
   bool _isProcessing = false;
   String _statusMessage = '';
   late final AnimationController _laserController;
-  late final Animation<double> _laserAnimation;
+  late final CurvedAnimation _laserAnimation;
 
   @override
   void initState() {
@@ -24,15 +24,20 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
     _laserController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
+    );
     _laserAnimation = CurvedAnimation(
       parent: _laserController,
       curve: Curves.easeInOut,
     );
+    final reduceMotion = WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+    if (!reduceMotion) {
+      _laserController.repeat(reverse: true);
+    }
   }
 
   @override
   void dispose() {
+    _laserAnimation.dispose();
     _laserController.dispose();
     super.dispose();
   }
@@ -57,10 +62,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
         if (!mounted) return;
         _navigateToReview(parsed);
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể quét ảnh: $e')),
+        const SnackBar(content: Text('Không đọc được ảnh. Chụp lại hoặc chọn ảnh khác.')),
       );
     } finally {
       if (mounted) {
@@ -111,7 +116,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
             controller: textController,
             maxLines: 8,
             decoration: const InputDecoration(
-              hintText: 'Dán toàn bộ văn bản hóa đơn (OCR raw text) vào đây...',
+              hintText: 'Dán chữ trên hóa đơn vào đây',
               border: OutlineInputBorder(),
             ),
           ),
@@ -131,11 +136,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                 _navigateToReview(parsed);
               }
             },
-            label: const Text('Phân tích Regex'),
+            label: const Text('Đọc hóa đơn'),
           ),
         ],
       ),
-    );
+    ).whenComplete(textController.dispose);
   }
 
   @override
@@ -144,7 +149,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quét Hóa Đơn (OCR AI)'),
+        title: const Text('Quét hóa đơn'),
         actions: [
           IconButton(
             icon: const Icon(Icons.paste_rounded),
