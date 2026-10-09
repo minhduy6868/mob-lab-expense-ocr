@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/theme.dart';
 import '../l10n/app_text.dart';
+import '../widgets/liquid_glass.dart';
 
 /// ShellScreen provides the modern Floating Glassmorphic Dock Navigation Bar
 class ShellScreen extends StatelessWidget {
@@ -40,7 +41,6 @@ class ShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectedIdx = _calculateSelectedIndex(context);
-    final isDark = theme.brightness == Brightness.dark;
     final text = AppText.of(context);
 
     return Scaffold(
@@ -57,16 +57,11 @@ class ShellScreen extends StatelessWidget {
             left: 16,
             right: 16,
             bottom: 12,
-            child: Container(
-                  height: 64,
+            child: GlassSurface(
+                  radius: 26,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    borderRadius: BorderRadius.circular(26),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                    ),
-                  ),
+                  child: SizedBox(
+                  height: 52,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -105,6 +100,7 @@ class ShellScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
             ),
           ),
         ],

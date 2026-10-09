@@ -9,6 +9,7 @@ import '../models/expense_item.dart';
 import '../services/database_helper.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
+import '../widgets/liquid_glass.dart';
 import '../widgets/vku_logo.dart';
 
 /// Expense List Screen - Flagship Fintech Dashboard
@@ -137,13 +138,10 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                 ],
               ),
             ),
-            Container(
+            GlassSurface(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: AppColors.splash,
-                borderRadius: BorderRadius.all(Radius.circular(26)),
-              ),
+              radius: 26,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -153,7 +151,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         child: Text(
                           filtering ? text.filtered : text.thisMonth,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.paper.withValues(alpha: 0.78),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.78),
                           ),
                         ),
                       ),
@@ -163,7 +161,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         onPressed: () => setState(() => _isBalanceVisible = !_isBalanceVisible),
                         icon: Icon(
                           _isBalanceVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                          color: AppColors.paper,
+                          color: theme.colorScheme.onSurface,
                           size: 20,
                         ),
                       ),
@@ -183,7 +181,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                   Text(
                     _isBalanceVisible ? Formatters.formatVND(shownTotal) : '•••••••• đ',
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      color: AppColors.paper,
+                      color: theme.colorScheme.onSurface,
                       height: 1.2,
                       letterSpacing: -0.4,
                     ),
@@ -193,7 +191,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                     Text(
                       text.thisWeek(Formatters.formatVND(weekTotal)),
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.paper.withValues(alpha: 0.78),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.78),
                       ),
                     ),
                   ],
@@ -214,8 +212,8 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                       const SizedBox(width: 8),
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.paper,
-                          side: BorderSide(color: AppColors.paper.withValues(alpha: 0.45)),
+                          foregroundColor: theme.colorScheme.onSurface,
+                          side: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.28)),
                         ),
                         onPressed: () => context.push('/review'),
                         child: Text(text.manualEntry),
@@ -230,18 +228,8 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
             // 3. Search and Category Filter Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
+              child: GlassSurface(
+                radius: 16,
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(

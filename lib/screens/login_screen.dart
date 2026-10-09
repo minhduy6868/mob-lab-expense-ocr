@@ -6,6 +6,7 @@ import '../core/theme.dart';
 import '../l10n/app_text.dart';
 import '../state/auth_controller.dart';
 import '../widgets/language_picker.dart';
+import '../widgets/liquid_glass.dart';
 import '../widgets/vku_logo.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -66,7 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AppColors.splash,
+        backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -106,109 +107,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Theme(
-                      data: AppTheme.lightTheme,
-                      child: DecoratedBox(
-                        decoration: const BoxDecoration(
-                          color: AppColors.paper,
-                          borderRadius: BorderRadius.all(Radius.circular(26)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                          child: Builder(
-                            builder: (context) {
-                              final theme = Theme.of(context);
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  TextField(
-                                    controller: _username,
-                                    textInputAction: TextInputAction.next,
-                                    autocorrect: false,
-                                    enableSuggestions: false,
-                                    autofillHints: const [AutofillHints.username],
-                                    decoration: InputDecoration(
-                                      labelText: text.username,
-                                      prefixIcon: const Icon(Icons.person_rounded),
+                    GlassSurface(
+                      radius: 26,
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                      child: Builder(
+                        builder: (context) {
+                          final theme = Theme.of(context);
+                          final isDark = theme.brightness == Brightness.dark;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextField(
+                                controller: _username,
+                                textInputAction: TextInputAction.next,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                autofillHints: const [AutofillHints.username],
+                                style: TextStyle(color: isDark ? AppColors.paper : AppColors.splash),
+                                decoration: InputDecoration(
+                                  labelText: text.username,
+                                  prefixIcon: const Icon(Icons.person_rounded),
+                                  filled: true,
+                                  fillColor: Colors.white.withValues(alpha: isDark ? 0.08 : 0.72),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _password,
+                                obscureText: _obscure,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [AutofillHints.password],
+                                onSubmitted: (_) => _busy ? null : _submit(),
+                                style: TextStyle(color: isDark ? AppColors.paper : AppColors.splash),
+                                decoration: InputDecoration(
+                                  labelText: text.password,
+                                  prefixIcon: const Icon(Icons.lock_rounded),
+                                  filled: true,
+                                  fillColor: Colors.white.withValues(alpha: isDark ? 0.08 : 0.72),
+                                  suffixIcon: IconButton(
+                                    tooltip: _obscure ? text.showPassword : text.hidePassword,
+                                    onPressed: () => setState(() => _obscure = !_obscure),
+                                    icon: Icon(
+                                      _obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded,
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  TextField(
-                                    controller: _password,
-                                    obscureText: _obscure,
-                                    textInputAction: TextInputAction.done,
-                                    autofillHints: const [AutofillHints.password],
-                                    onSubmitted: (_) => _busy ? null : _submit(),
-                                    decoration: InputDecoration(
-                                      labelText: text.password,
-                                      prefixIcon: const Icon(Icons.lock_rounded),
-                                      suffixIcon: IconButton(
-                                        tooltip: _obscure ? text.showPassword : text.hidePassword,
-                                        onPressed: () => setState(() => _obscure = !_obscure),
-                                        icon: Icon(
-                                          _obscure
-                                              ? Icons.visibility_rounded
-                                              : Icons.visibility_off_rounded,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                text.loginHint,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark ? AppColors.paper.withValues(alpha: 0.78) : AppColors.goldInk,
+                                ),
+                              ),
+                              if (_error != null) ...[
+                                const SizedBox(height: 16),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.errorContainer,
+                                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      _error!,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.onErrorContainer,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: isDark ? AppColors.gold : AppColors.navy,
+                                  foregroundColor: isDark ? AppColors.splash : AppColors.paper,
+                                ),
+                                onPressed: _busy ? null : _submit,
+                                child: _busy
+                                    ? SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: isDark ? AppColors.splash : AppColors.paper,
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    text.loginHint,
-                                    style: theme.textTheme.bodySmall?.copyWith(color: AppColors.goldInk),
-                                  ),
-                                  if (_error != null) ...[
-                                    const SizedBox(height: 16),
-                                    DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.errorContainer,
-                                        borderRadius: const BorderRadius.all(Radius.circular(16)),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Text(
-                                          _error!,
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: theme.colorScheme.onErrorContainer,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 16),
-                                  FilledButton(
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: AppColors.navy,
-                                      foregroundColor: AppColors.paper,
-                                    ),
-                                    onPressed: _busy ? null : _submit,
-                                    child: _busy
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: AppColors.paper,
-                                            ),
-                                          )
-                                        : Text(_register ? text.createAccount : text.logIn),
-                                  ),
-                                  TextButton(
-                                    style: TextButton.styleFrom(foregroundColor: AppColors.navy),
-                                    onPressed: _busy
-                                        ? null
-                                        : () => setState(() {
-                                              _register = !_register;
-                                              _error = null;
-                                            }),
-                                    child: Text(_register ? text.haveAccount : text.needAccount),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
+                                      )
+                                    : Text(_register ? text.createAccount : text.logIn),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: isDark ? AppColors.paper : AppColors.navy,
+                                ),
+                                onPressed: _busy
+                                    ? null
+                                    : () => setState(() {
+                                          _register = !_register;
+                                          _error = null;
+                                        }),
+                                child: Text(_register ? text.haveAccount : text.needAccount),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],

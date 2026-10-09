@@ -25,7 +25,7 @@ class AppTheme {
       secondary: AppColors.gold,
       surface: const Color(0xFFF8FAFC),
     ),
-    scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+    scaffoldBackgroundColor: Colors.transparent,
     textTheme: _textTheme(Brightness.light),
     appBarTheme: AppBarTheme(
       centerTitle: false,
@@ -120,7 +120,7 @@ class AppTheme {
       onSecondary: AppColors.splash,
       surface: const Color(0xFF0F172A),
     ),
-    scaffoldBackgroundColor: AppColors.night,
+    scaffoldBackgroundColor: Colors.transparent,
     textTheme: _textTheme(Brightness.dark),
     appBarTheme: AppBarTheme(
       centerTitle: false,

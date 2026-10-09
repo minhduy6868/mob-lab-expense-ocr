@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/theme.dart';
 import '../l10n/app_text.dart';
+import '../widgets/liquid_glass.dart';
 import '../models/parsed_receipt.dart';
 import '../services/ocr_service.dart';
 
@@ -170,13 +171,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // 1. Animated Scanner Viewfinder Box
-                  Container(
+                  SizedBox(
                     height: 220,
-                    decoration: const BoxDecoration(
-                      color: AppColors.splash,
-                      borderRadius: BorderRadius.all(Radius.circular(26)),
-                    ),
-                    child: Stack(
+                    child: GlassSurface(
+                      radius: 26,
+                      child: Stack(
                       children: [
                         // Viewfinder Corner Brackets
                         Positioned.fill(
@@ -283,20 +282,21 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                               const SizedBox(height: 10),
                               Text(
                                 AppText.of(context).ocrBanner,
-                                style: theme.textTheme.titleMedium?.copyWith(color: AppColors.paper),
+                                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurface),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 AppText.of(context).ocrBannerBody,
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.paper.withValues(alpha: 0.78),
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.78),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ],
+                    ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -396,10 +396,9 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
               Container(
                 color: Colors.black54,
                 child: Center(
-                  child: Card(
-                    elevation: 12,
+                  child: GlassCard(
                     margin: const EdgeInsets.symmetric(horizontal: 36),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    radius: 20,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
                       child: Column(
@@ -438,13 +437,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 9),
-      elevation: 0.6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: color.withValues(alpha: 0.2), width: 1),
-      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         leading: Container(

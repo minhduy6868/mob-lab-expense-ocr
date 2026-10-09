@@ -8,6 +8,7 @@ import '../state/auth_controller.dart';
 import '../state/expense_providers.dart';
 import '../widgets/install_app_card.dart';
 import '../widgets/language_picker.dart';
+import '../widgets/liquid_glass.dart';
 import '../widgets/vku_logo.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -63,8 +64,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
-            Card(
-              elevation: 0.8,
+            GlassCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -129,8 +129,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
             const SizedBox(height: 12),
             // Theme Mode Section
-            Card(
-              elevation: 0.8,
+            GlassCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -184,8 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 12),
 
             // Platform Channels Native Interop Card (Slide 37-39)
-            Card(
-              elevation: 0.8,
+            GlassCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -271,8 +269,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 12),
 
-            Card(
-              elevation: 0.8,
+            GlassCard(
               child: Column(
                 children: [
                   ListTile(
@@ -356,8 +353,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 12),
 
             // Academic & Project Info Card
-            Card(
-              elevation: 0.8,
+            GlassCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

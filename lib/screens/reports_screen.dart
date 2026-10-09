@@ -6,6 +6,7 @@ import '../models/expense_category.dart';
 import '../state/expense_providers.dart';
 import '../widgets/animated_bar_chart.dart';
 import '../widgets/animated_donut_chart.dart';
+import '../widgets/liquid_glass.dart';
 
 /// Reports Screen
 /// Custom canvas visualizations:
@@ -245,8 +246,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Card(
-                      elevation: 0.8,
+                    child: GlassCard(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -295,8 +295,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
     required IconData icon,
     required ThemeData theme,
   }) {
-    return Card(
-      elevation: 0.8,
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

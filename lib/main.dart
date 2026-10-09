@@ -7,6 +7,7 @@ import 'l10n/app_text.dart';
 import 'services/database_helper.dart';
 import 'state/auth_controller.dart';
 import 'state/expense_providers.dart';
+import 'widgets/liquid_glass.dart';
 import 'state/locale_controller.dart';
 
 Future<void> main() async {
@@ -44,6 +45,7 @@ class VKUExpenseApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: appRouter,
+      builder: (context, child) => LiquidBackdrop(child: child ?? const SizedBox.shrink()),
     );
   }
 }

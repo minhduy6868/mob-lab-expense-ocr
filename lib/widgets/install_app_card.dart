@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../l10n/app_text.dart';
 import '../services/web_install.dart';
+import 'liquid_glass.dart';
 import 'vku_logo.dart';
 
 class InstallAppCard extends StatelessWidget {
@@ -15,7 +16,7 @@ class InstallAppCard extends StatelessWidget {
     final text = AppText.of(context);
     final theme = Theme.of(context);
 
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

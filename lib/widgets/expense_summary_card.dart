@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../models/expense_category.dart';
+import 'liquid_glass.dart';
 
 /// Reusable ExpenseSummaryCard widget
 /// Adheres strictly to Week 7 Slide 45 In-Class Lab Exercise:
@@ -33,23 +34,12 @@ class ExpenseSummaryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final categoryColor = category.color;
 
-    return Card(
-      elevation: 0.6,
+    return GlassSurface(
+      radius: 16,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
-          width: 0.8,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        splashColor: categoryColor.withValues(alpha: 0.12),
-        highlightColor: categoryColor.withValues(alpha: 0.05),
-        child: Padding(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -173,7 +163,6 @@ class ExpenseSummaryCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../models/parsed_receipt.dart';
 import '../state/expense_providers.dart';
+import '../widgets/liquid_glass.dart';
 
 /// Review & Verification Screen (Slide 26-28, 41)
 /// Features Form, GlobalKey of FormState, TextEditingController,
@@ -383,9 +384,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
 
                 // Raw OCR Text Inspector (Slide 41)
                 if (_rawOcrText != null && _rawOcrText!.isNotEmpty) ...[
-                  Card(
-                    elevation: 0.6,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  GlassCard(
                     child: ExpansionTile(
                       shape: const Border(),
                       title: const Text(
