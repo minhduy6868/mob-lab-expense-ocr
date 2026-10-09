@@ -7,9 +7,11 @@ import '../l10n/app_text.dart';
 import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../services/database_helper.dart';
+import '../state/auth_controller.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
 import '../widgets/liquid_glass.dart';
+import '../widgets/logout_button.dart';
 import '../widgets/vku_logo.dart';
 
 /// Expense List Screen - Flagship Fintech Dashboard
@@ -65,6 +67,12 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     final selectedCategory = ref.watch(selectedCategoryFilterProvider);
     final currentQuery = ref.watch(searchQueryProvider);
     final sync = ref.watch(cloudSyncProvider);
+    final auth = ref.watch(authProvider);
+    final syncLabel = switch (sync.phase) {
+      CloudSyncPhase.synced => text.synced,
+      CloudSyncPhase.offline => text.offline,
+      CloudSyncPhase.checking => text.syncing,
+    };
     final now = DateTime.now();
     final allItems = asyncExpenses.value ?? [];
     final filtering = currentQuery.trim().isNotEmpty || selectedCategory != null;
@@ -102,11 +110,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                switch (sync.phase) {
-                                  CloudSyncPhase.synced => text.synced,
-                                  CloudSyncPhase.offline => text.offline,
-                                  CloudSyncPhase.checking => text.syncing,
-                                },
+                                auth.username.isEmpty ? syncLabel : '${auth.username}, $syncLabel',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -121,20 +125,8 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                       ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      IconButton.filledTonal(
-                        icon: Icon(
-                          isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                          size: 19,
-                        ),
-                        onPressed: () {
-                          ref.read(themeModeProvider.notifier).toggleTheme();
-                        },
-                        tooltip: 'Đổi giao diện Sáng/Tối',
-                      ),
-                    ],
-                  ),
+                  const SizedBox(width: 8),
+                  const LogoutButton(),
                 ],
               ),
             ),

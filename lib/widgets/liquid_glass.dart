@@ -18,7 +18,7 @@ class LiquidBackdrop extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? const [Color(0xFF1B3A66), AppColors.splash, Color(0xFF08111E)]
+              ? const [AppColors.nightTop, AppColors.nightMid, AppColors.night]
               : const [Color(0xFFD7E3F6), AppColors.paper, Color(0xFFC9D8F0)],
         ),
       ),
@@ -27,12 +27,15 @@ class LiquidBackdrop extends StatelessWidget {
           Positioned(
             top: -80,
             right: -40,
-            child: _orb(isDark ? AppColors.gold.withValues(alpha: 0.16) : AppColors.gold.withValues(alpha: 0.35), 220),
+            child: _orb(isDark ? AppColors.gold.withValues(alpha: 0.20) : AppColors.gold.withValues(alpha: 0.35), 180),
           ),
           Positioned(
             bottom: 80,
             left: -60,
-            child: _orb(isDark ? const Color(0xFF3D6BB5).withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.7), 260),
+            child: _orb(
+              isDark ? const Color(0xFF8AA4D4).withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.7),
+              220,
+            ),
           ),
           child,
         ],
@@ -99,13 +102,15 @@ class GlassSurface extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? const [Color(0xF21C2B46), Color(0xF0121C34)]
+                  ? const [AppColors.nightGlassTop, AppColors.nightGlassBottom]
                   : [
                       Colors.white.withValues(alpha: 0.58),
                       Colors.white.withValues(alpha: 0.28),
                     ],
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.38 : 0.74)),
+            border: Border.all(
+              color: isDark ? AppColors.gold.withValues(alpha: 0.42) : Colors.white.withValues(alpha: 0.74),
+            ),
           ),
           child: Stack(
             children: [
@@ -113,7 +118,7 @@ class GlassSurface extends StatelessWidget {
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 32,
+                height: isDark ? 14 : 32,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
@@ -121,7 +126,7 @@ class GlassSurface extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.20 : 0.50),
+                        isDark ? AppColors.paper.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.50),
                         Colors.white.withValues(alpha: 0),
                       ],
                     ),

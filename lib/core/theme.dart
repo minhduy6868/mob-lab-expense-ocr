@@ -8,6 +8,11 @@ class AppColors {
   static const Color goldInk = Color(0xFF7A5A10);
   static const Color paper = Color(0xFFF4F0E6);
   static const Color night = Color(0xFF10151F);
+  static const Color nightTop = Color(0xFF243656);
+  static const Color nightMid = Color(0xFF141C2C);
+  static const Color nightGlassTop = Color(0xF02E3C54);
+  static const Color nightGlassBottom = Color(0xF01A2436);
+  static const Color nightField = Color(0xFF1A2433);
 }
 
 class AppTheme {
@@ -192,7 +197,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF243044),
+      fillColor: AppColors.nightField,
       hintStyle: GoogleFonts.inter(color: const Color(0xFFD7D1C6), height: 1.4),
       labelStyle: GoogleFonts.inter(color: AppColors.paper),
       border: OutlineInputBorder(

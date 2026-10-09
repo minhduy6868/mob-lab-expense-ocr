@@ -9,6 +9,7 @@ import '../state/expense_providers.dart';
 import '../widgets/install_app_card.dart';
 import '../widgets/language_picker.dart';
 import '../widgets/liquid_glass.dart';
+import '../widgets/logout_button.dart';
 import '../widgets/vku_logo.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -90,35 +91,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    const LogoutButton(wide: true),
+                    const SizedBox(height: 8),
                     const LanguagePicker(),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: TextButton.icon(
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: Text(text.confirmLogout),
-                            content: Text(text.confirmLogoutBody),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(text.cancel)),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
-                                child: Text(text.logOut),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await ref.read(authProvider.notifier).signOut();
-                        }
-                      },
-                        style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
-                        icon: const Icon(Icons.logout_rounded),
-                        label: Text(text.logOut),
-                      ),
-                    ),
                   ],
                 ),
               ),

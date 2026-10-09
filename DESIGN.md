@@ -26,4 +26,4 @@ Tiếng Việt mặc định, chuyển được sang tiếng Anh. Câu ngắn, �
 - 2026-10-09: Cloudflare D1 là sổ trên mây, SQLite là bản trên máy. Mỗi cài đặt một khóa thiết bị.
 - 2026-10-09: Mỗi tài khoản một sổ trên D1. Đăng ký bắt đầu trống. Đăng nhập chỉ kéo dòng của user đó. Không tự chép sổ máy và không tự nạp hóa đơn mẫu.
 - 2026-10-09: Web có thẻ cài app: thêm vào màn hình chính, hoặc tải APK Android. Logo nằm trên splash, đăng nhập, cài đặt, và thẻ cài app.
-- 2026-10-09: Kính tối đủ đặc để chữ kem đọc được. Nền vẫn có vầng sáng, nhưng thẻ không trong suốt đến mức mất chữ.
+- 2026-10-09: Kính tối là mặt đá phiến trên nền mực, viền vàng mảnh, vệt sáng kem ngắn. Không viền trắng dày. Đăng xuất nằm trên sổ chi và trong Hệ thống.

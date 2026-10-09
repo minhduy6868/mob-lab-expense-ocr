@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   labelText: text.username,
                                   prefixIcon: const Icon(Icons.person_rounded),
                                   filled: true,
-                                  fillColor: isDark ? const Color(0xFF243044) : Colors.white.withValues(alpha: 0.72),
+                                  fillColor: isDark ? AppColors.nightField : Colors.white.withValues(alpha: 0.72),
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -143,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   labelText: text.password,
                                   prefixIcon: const Icon(Icons.lock_rounded),
                                   filled: true,
-                                  fillColor: isDark ? const Color(0xFF243044) : Colors.white.withValues(alpha: 0.72),
+                                  fillColor: isDark ? AppColors.nightField : Colors.white.withValues(alpha: 0.72),
                                   suffixIcon: IconButton(
                                     tooltip: _obscure ? text.showPassword : text.hidePassword,
                                     onPressed: () => setState(() => _obscure = !_obscure),
