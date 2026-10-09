@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +9,7 @@ import '../models/expense_item.dart';
 import '../services/database_helper.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
-import '../widgets/install_app_card.dart';
+import '../widgets/vku_logo.dart';
 
 /// Expense List Screen - Flagship Fintech Dashboard
 class ExpenseListScreen extends ConsumerStatefulWidget {
@@ -88,15 +87,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/brand/icon.png',
-                            width: 44,
-                            height: 44,
-                            semanticLabel: 'Logo VKU Ledger',
-                          ),
-                        ),
+                        const VkuLogo(size: 44),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -146,220 +137,90 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                 ],
               ),
             ),
-            if (kIsWeb)
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: InstallAppCard(),
-              ),
-
-            // 2. High-End Fintech Wallet Hero Card
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B), const Color(0xFF0C4A6E)]
-                      : [const Color(0xFF1E3A8A), const Color(0xFF1D4ED8), const Color(0xFF0284C7)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(26),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1E3A8A).withValues(alpha: isDark ? 0.4 : 0.28),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: AppColors.splash,
+                borderRadius: BorderRadius.all(Radius.circular(26)),
               ),
-              child: Stack(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Decorative background bubbles
-                  Positioned(
-                    right: -25,
-                    top: -25,
-                    child: Container(
-                      width: 120,
-                      height: 120,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          filtering ? text.filtered : text.thisMonth,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.paper.withValues(alpha: 0.78),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        tooltip: _isBalanceVisible ? text.hidePassword : text.showPassword,
+                        onPressed: () => setState(() => _isBalanceVisible = !_isBalanceVisible),
+                        icon: Icon(
+                          _isBalanceVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                          color: AppColors.paper,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    width: 48,
+                    height: 4,
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: AppColors.gold,
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                     ),
                   ),
-                  Positioned(
-                    right: 60,
-                    bottom: -35,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.04),
-                      ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _isBalanceVisible ? Formatters.formatVND(shownTotal) : '•••••••• đ',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: AppColors.paper,
+                      height: 1.2,
+                      letterSpacing: -0.4,
                     ),
                   ),
-
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  filtering ? text.filtered : text.thisMonth,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () => setState(() => _isBalanceVisible = !_isBalanceVisible),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Icon(
-                                      _isBalanceVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                                      color: Colors.white.withValues(alpha: 0.75),
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 0.8),
-                              ),
-                              child: Text(
-                                '${shownItems.length} hóa đơn',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 48,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.gold,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Large balance figure
-                        Text(
-                          _isBalanceVisible ? Formatters.formatVND(shownTotal) : '•••••••• đ',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 29,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.8,
-                          ),
-                        ),
-                        if (!filtering) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            text.thisWeek(Formatters.formatVND(weekTotal)),
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.82),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 14),
-
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final stacked = constraints.maxWidth < 360;
-                            final actions = [
-                              _buildHeroAction(
-                                icon: Icons.document_scanner_rounded,
-                                label: text.scanReceipt,
-                                isPrimary: true,
-                                onTap: () => context.push('/scan'),
-                              ),
-                              _buildHeroAction(
-                                icon: Icons.edit_note_rounded,
-                                label: text.manualEntry,
-                                isPrimary: false,
-                                onTap: () => context.push('/review'),
-                              ),
-                              _buildHeroAction(
-                                icon: Icons.insights_rounded,
-                                label: text.charts,
-                                isPrimary: false,
-                                onTap: () => context.go('/reports'),
-                              ),
-                              _buildHeroAction(
-                                icon: Icons.restart_alt_rounded,
-                                label: text.loadSamples,
-                                isPrimary: false,
-                                onTap: () async {
-                                  await ref.read(expenseListProvider.notifier).seedSampleData();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(text.samplesLoaded)),
-                                    );
-                                  }
-                                },
-                              ),
-                            ];
-                            if (!stacked) {
-                              return Row(
-                                children: [
-                                  for (var i = 0; i < actions.length; i++) ...[
-                                    if (i > 0) const SizedBox(width: 8),
-                                    Expanded(child: actions[i]),
-                                  ],
-                                ],
-                              );
-                            }
-                            return Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: actions[0]),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: actions[1]),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(child: actions[2]),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: actions[3]),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
+                  if (!filtering) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      text.thisWeek(Formatters.formatVND(weekTotal)),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.paper.withValues(alpha: 0.78),
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.gold,
+                            foregroundColor: AppColors.navy,
+                          ),
+                          onPressed: () => context.push('/scan'),
+                          icon: const Icon(Icons.document_scanner_rounded),
+                          label: Text(text.scanReceipt),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.paper,
+                          side: BorderSide(color: AppColors.paper.withValues(alpha: 0.45)),
+                        ),
+                        onPressed: () => context.push('/review'),
+                        child: Text(text.manualEntry),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -586,48 +447,6 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     );
   }
 
-  Widget _buildHeroAction({
-    required IconData icon,
-    required String label,
-    required bool isPrimary,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        decoration: BoxDecoration(
-          color: isPrimary ? AppColors.gold : Colors.white.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(14),
-          border: isPrimary ? null : Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 19,
-              color: isPrimary ? AppColors.navy : Colors.white,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isPrimary ? AppColors.navy : Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 11,
-                height: 1.2,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _LedgerMessage extends StatelessWidget {

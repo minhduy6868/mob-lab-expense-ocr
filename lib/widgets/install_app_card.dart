@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../core/theme.dart';
 import '../l10n/app_text.dart';
 import '../services/web_install.dart';
 import 'vku_logo.dart';
@@ -30,34 +31,45 @@ class InstallAppCard extends StatelessWidget {
                     children: [
                       Text(text.installTitle, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 4),
-                      Text(text.installBody, style: theme.textTheme.bodyMedium),
+                      Text(
+                        text.installBody,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            const SizedBox(
+              width: 48,
+              height: 4,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(
-                  onPressed: () async {
-                    final outcome = await promptPwaInstall();
-                    if (!context.mounted || outcome == 'accepted') return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(text.installHelp)),
-                    );
-                  },
-                  icon: const Icon(Icons.install_mobile_rounded),
-                  label: Text(text.addToHome),
-                ),
-                OutlinedButton.icon(
-                  onPressed: downloadAndroidApk,
-                  icon: const Icon(Icons.android_rounded),
-                  label: Text(text.downloadApk),
-                ),
-              ],
+            FilledButton.icon(
+              onPressed: () async {
+                final outcome = await promptPwaInstall();
+                if (!context.mounted || outcome == 'accepted') return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(text.installHelp)),
+                );
+              },
+              icon: const Icon(Icons.install_mobile_rounded),
+              label: Text(text.addToHome),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: downloadAndroidApk,
+              icon: const Icon(Icons.android_rounded),
+              label: Text(text.downloadApk),
             ),
           ],
         ),

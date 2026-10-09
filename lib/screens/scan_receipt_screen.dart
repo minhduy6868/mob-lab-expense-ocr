@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../core/theme.dart';
 import '../l10n/app_text.dart';
 import '../models/parsed_receipt.dart';
 import '../services/ocr_service.dart';
@@ -171,23 +172,9 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                   // 1. Animated Scanner Viewfinder Box
                   Container(
                     height: 220,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0F172A),
-                          theme.colorScheme.primary.withValues(alpha: 0.9),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+                    decoration: const BoxDecoration(
+                      color: AppColors.splash,
+                      borderRadius: BorderRadius.all(Radius.circular(26)),
                     ),
                     child: Stack(
                       children: [
@@ -205,8 +192,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                     height: 24,
                                     decoration: const BoxDecoration(
                                       border: Border(
-                                        top: BorderSide(color: Color(0xFF38BDF8), width: 3),
-                                        left: BorderSide(color: Color(0xFF38BDF8), width: 3),
+                                        top: BorderSide(color: AppColors.gold, width: 3),
+                                        left: BorderSide(color: AppColors.gold, width: 3),
                                       ),
                                     ),
                                   ),
@@ -219,8 +206,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                     height: 24,
                                     decoration: const BoxDecoration(
                                       border: Border(
-                                        top: BorderSide(color: Color(0xFF38BDF8), width: 3),
-                                        right: BorderSide(color: Color(0xFF38BDF8), width: 3),
+                                        top: BorderSide(color: AppColors.gold, width: 3),
+                                        right: BorderSide(color: AppColors.gold, width: 3),
                                       ),
                                     ),
                                   ),
@@ -233,8 +220,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                     height: 24,
                                     decoration: const BoxDecoration(
                                       border: Border(
-                                        bottom: BorderSide(color: Color(0xFF38BDF8), width: 3),
-                                        left: BorderSide(color: Color(0xFF38BDF8), width: 3),
+                                        bottom: BorderSide(color: AppColors.gold, width: 3),
+                                        left: BorderSide(color: AppColors.gold, width: 3),
                                       ),
                                     ),
                                   ),
@@ -247,8 +234,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                     height: 24,
                                     decoration: const BoxDecoration(
                                       border: Border(
-                                        bottom: BorderSide(color: Color(0xFF38BDF8), width: 3),
-                                        right: BorderSide(color: Color(0xFF38BDF8), width: 3),
+                                        bottom: BorderSide(color: AppColors.gold, width: 3),
+                                        right: BorderSide(color: AppColors.gold, width: 3),
                                       ),
                                     ),
                                   ),
@@ -269,21 +256,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                               child: Container(
                                 height: 2.5,
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      Color(0xFF38BDF8),
-                                      Color(0xFF00E5FF),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
-                                      blurRadius: 10,
-                                      spreadRadius: 1.5,
-                                    ),
-                                  ],
+                                  color: AppColors.gold,
                                 ),
                               ),
                             );
@@ -304,24 +277,20 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                 child: const Icon(
                                   Icons.document_scanner_rounded,
                                   size: 34,
-                                  color: Colors.white,
+                                  color: AppColors.gold,
                                 ),
                               ),
                               const SizedBox(height: 10),
                               Text(
                                 AppText.of(context).ocrBanner,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
+                                style: theme.textTheme.titleMedium?.copyWith(color: AppColors.paper),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 AppText.of(context).ocrBannerBody,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.75),
-                                  fontSize: 11.5,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.paper.withValues(alpha: 0.78),
                                 ),
                               ),
                             ],
@@ -370,49 +339,12 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // 3. Realistic Vietnamese Sample Receipts Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 8),
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title: Text(AppText.of(context).sampleSection),
+                    subtitle: Text(AppText.of(context).sampleSectionBody),
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.flash_on_rounded, size: 20, color: theme.colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            AppText.of(context).sampleSection,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '1-Tap Test',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppText.of(context).sampleSectionBody,
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline),
-                  ),
-                  const SizedBox(height: 12),
-
                   _buildSampleCard(
                     title: 'Highlands Coffee VKU',
                     subtitle: '122.040 đ • Ngày 22/10/2026',
@@ -452,6 +384,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                     icon: Icons.menu_book_rounded,
                     color: const Color(0xFF0D9488),
                     onTap: () => _processSampleReceipt('Fahasa', _sampleFahasa),
+                  ),
+                    ],
                   ),
                 ],
               ),

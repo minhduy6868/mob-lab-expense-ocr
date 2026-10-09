@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -58,31 +57,15 @@ class ShellScreen extends StatelessWidget {
             left: 16,
             right: 16,
             bottom: 12,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(26),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
+            child: Container(
                   height: 64,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1E293B).withValues(alpha: 0.85)
-                        : Colors.white.withValues(alpha: 0.90),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(26),
                     border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF334155).withValues(alpha: 0.8)
-                          : const Color(0xFFE2E8F0),
-                      width: 1.2,
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -122,8 +105,6 @@ class ShellScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
             ),
           ),
         ],
@@ -193,13 +174,6 @@ class ShellScreen extends StatelessWidget {
           color: AppColors.gold,
           borderRadius: BorderRadius.circular(16),
           border: isSelected ? Border.all(color: AppColors.navy, width: 1.4) : null,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.gold.withValues(alpha: 0.35),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

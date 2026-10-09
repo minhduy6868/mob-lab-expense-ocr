@@ -91,8 +91,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     const LanguagePicker(),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TextButton.icon(
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
@@ -101,7 +102,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             content: Text(text.confirmLogoutBody),
                             actions: [
                               TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(text.cancel)),
-                              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(text.logOut)),
+                              FilledButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
+                                child: Text(text.logOut),
+                              ),
                             ],
                           ),
                         );
@@ -109,8 +114,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           await ref.read(authProvider.notifier).signOut();
                         }
                       },
-                      icon: const Icon(Icons.logout_rounded),
-                      label: Text(text.logOut),
+                        style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                        icon: const Icon(Icons.logout_rounded),
+                        label: Text(text.logOut),
+                      ),
                     ),
                   ],
                 ),
