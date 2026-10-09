@@ -88,7 +88,7 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _store(AuthSession session) async {
     final prefs = await SharedPreferences.getInstance();
     final previous = prefs.getString(_userKey);
-    if (previous != null && previous != session.userId) {
+    if (previous != session.userId) {
       await _db.wipeLocalLedger();
     }
     await prefs.setString(_tokenKey, session.token);

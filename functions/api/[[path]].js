@@ -5,8 +5,7 @@
  *   GET  /api/expenses
  *   POST /api/expenses/sync   { ops: [{op,id?,item?}] }
  *
- * Expenses are scoped by the signed-in user. X-Device-Id is only used once,
- * at login, to copy a previous device ledger into that account.
+ * Expenses are scoped by the signed-in user id. A new account starts empty.
  */
 
 const CORS = {
@@ -24,12 +23,6 @@ function json(data, status = 200) {
       ...CORS,
     },
   });
-}
-
-function deviceId(request) {
-  const id = request.headers.get('X-Device-Id') || '';
-  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id)) return null;
-  return id;
 }
 
 async function ensureSchema(env) {
@@ -92,6 +85,12 @@ function bearerToken(request) {
   return /^[a-f0-9]{64}$/.test(token) ? token : null;
 }
 
+function accountId(row) {
+  if (!row || typeof row !== 'object') return null;
+  const id = row.userId ?? row.userid ?? row.user_id ?? row.id;
+  return typeof id === 'string' && id.length > 0 ? id : null;
+}
+
 async function requireUser(env, request) {
   const token = bearerToken(request);
   if (!token) return null;
@@ -103,24 +102,11 @@ async function requireUser(env, request) {
   ).bind(token).first();
 }
 
-async function adoptDeviceLedger(env, userId, deviceOwner) {
-  if (!deviceOwner || deviceOwner === userId) return;
-  if (!/^[A-Za-z0-9_-]{8,80}$/.test(deviceOwner)) return;
-  await env.DB.prepare(
-    `INSERT INTO expenses (id, device_id, title, amount, timestamp, category, receiptImagePath, rawOcrText, note)
-     SELECT id, ?1, title, amount, timestamp, category, receiptImagePath, rawOcrText, note
-     FROM expenses
-     WHERE device_id = ?2
-     ON CONFLICT(device_id, id) DO NOTHING`,
-  ).bind(userId, deviceOwner).run();
-}
-
-async function openSession(env, userId, username, deviceOwner) {
+async function openSession(env, userId, username) {
   const token = randomHex(32);
   await env.DB.prepare(
     'INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)',
   ).bind(token, userId, new Date().toISOString()).run();
-  await adoptDeviceLedger(env, userId, deviceOwner);
   return { token, userId, username };
 }
 
@@ -223,7 +209,9 @@ export async function onRequest(context) {
       if (parts[1] === 'me' && request.method === 'GET') {
         const user = await requireUser(env, request);
         if (!user) return json({ error: 'unauthorized' }, 401);
-        return json({ userId: user.userId, username: user.username });
+        const userId = accountId(user);
+        if (!userId) return json({ error: 'unauthorized' }, 401);
+        return json({ userId, username: user.username });
       }
 
       if (parts[1] === 'logout' && request.method === 'POST') {
@@ -240,7 +228,6 @@ export async function onRequest(context) {
         const password = String(body?.password ?? '');
         if (!username) return json({ error: 'invalid_username' }, 400);
         if (password.length < 6 || password.length > 72) return json({ error: 'weak_password' }, 400);
-        const deviceOwner = deviceId(request);
 
         if (parts[1] === 'register') {
           const userId = `usr_${randomHex(8)}`;
@@ -257,7 +244,7 @@ export async function onRequest(context) {
             }
             throw error;
           }
-          return json(await openSession(env, userId, username, deviceOwner));
+          return json(await openSession(env, userId, username));
         }
 
         const row = await env.DB.prepare(
@@ -266,7 +253,9 @@ export async function onRequest(context) {
         if (!row) return json({ error: 'invalid_login' }, 401);
         const passwordHash = await sha256(`${row.salt}:${password}`);
         if (passwordHash !== row.password_hash) return json({ error: 'invalid_login' }, 401);
-        return json(await openSession(env, row.id, username, deviceOwner));
+        const userId = accountId(row);
+        if (!userId) return json({ error: 'invalid_login' }, 401);
+        return json(await openSession(env, userId, username));
       }
 
       return json({ error: 'Not found' }, 404);
@@ -277,8 +266,8 @@ export async function onRequest(context) {
     }
 
     const user = await requireUser(env, request);
-    if (!user) return json({ error: 'unauthorized' }, 401);
-    const owner = user.userId;
+    const owner = accountId(user);
+    if (!owner) return json({ error: 'unauthorized' }, 401);
 
     if (request.method === 'GET' && parts.length === 1) {
       return json({ items: await readItems(env, owner) });

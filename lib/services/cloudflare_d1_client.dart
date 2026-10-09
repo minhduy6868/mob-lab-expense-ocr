@@ -78,8 +78,8 @@ class CloudflareD1Client {
     final body = _decodeObject(response);
     return AuthSession(
       token: accessToken ?? '',
-      userId: body['userId'] as String,
-      username: body['username'] as String,
+      userId: _field(body, const ['userId', 'userid', 'user_id']),
+      username: _field(body, const ['username']),
     );
   }
 
@@ -100,10 +100,18 @@ class CloudflareD1Client {
         .timeout(_timeout);
     final body = _decodeObject(response);
     return AuthSession(
-      token: body['token'] as String,
-      userId: body['userId'] as String,
-      username: body['username'] as String,
+      token: _field(body, const ['token']),
+      userId: _field(body, const ['userId', 'userid', 'user_id']),
+      username: _field(body, const ['username']),
     );
+  }
+
+  String _field(Map<dynamic, dynamic> body, List<String> keys) {
+    for (final key in keys) {
+      final value = body[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    throw const CloudflareD1Exception('invalid_response');
   }
 
   Future<bool> health() async {

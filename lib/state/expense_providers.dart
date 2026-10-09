@@ -38,11 +38,6 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseItem>> {
   Future<List<ExpenseItem>> _loadExpenses() async {
     try {
       final items = await _db.getAllExpenses();
-      if (items.isEmpty) {
-        // Preload default VKU sample receipts for first run
-        await _seedInitialSamples();
-        return await _db.getAllExpenses();
-      }
       return items;
     } catch (e) {
       debugPrint('Error loading expenses: $e');
