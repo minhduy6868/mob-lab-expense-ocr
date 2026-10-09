@@ -7,10 +7,25 @@ import '../models/expense_item.dart';
 
 class CloudflareD1Exception implements Exception {
   final String message;
-  const CloudflareD1Exception(this.message);
+  final int? statusCode;
+  const CloudflareD1Exception(this.message, {this.statusCode});
+
+  bool get unauthorized => statusCode == 401;
 
   @override
   String toString() => message;
+}
+
+class AuthSession {
+  final String token;
+  final String userId;
+  final String username;
+
+  const AuthSession({
+    required this.token,
+    required this.userId,
+    required this.username,
+  });
 }
 
 /// Production Pages origin. Override with --dart-define=D1_API_BASE=https://host
@@ -31,19 +46,65 @@ class CloudflareD1Client {
     http.Client? client,
     String? baseUrl,
     required this.deviceId,
+    this.accessToken,
   })  : _client = client ?? http.Client(),
         baseUrl = baseUrl ?? resolveD1BaseUrl();
 
   final http.Client _client;
   final String baseUrl;
   final String deviceId;
+  final String? accessToken;
 
   static const _timeout = Duration(seconds: 12);
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         'X-Device-Id': deviceId,
+        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
       };
+
+  Future<AuthSession> register(String username, String password) {
+    return _auth('register', username, password);
+  }
+
+  Future<AuthSession> login(String username, String password) {
+    return _auth('login', username, password);
+  }
+
+  Future<AuthSession> me() async {
+    final response = await _client
+        .get(Uri.parse('$baseUrl/api/auth/me'), headers: _headers)
+        .timeout(_timeout);
+    final body = _decodeObject(response);
+    return AuthSession(
+      token: accessToken ?? '',
+      userId: body['userId'] as String,
+      username: body['username'] as String,
+    );
+  }
+
+  Future<void> logout() async {
+    final response = await _client
+        .post(Uri.parse('$baseUrl/api/auth/logout'), headers: _headers)
+        .timeout(_timeout);
+    _ensureJson(response);
+  }
+
+  Future<AuthSession> _auth(String action, String username, String password) async {
+    final response = await _client
+        .post(
+          Uri.parse('$baseUrl/api/auth/$action'),
+          headers: _headers,
+          body: jsonEncode({'username': username, 'password': password}),
+        )
+        .timeout(_timeout);
+    final body = _decodeObject(response);
+    return AuthSession(
+      token: body['token'] as String,
+      userId: body['userId'] as String,
+      username: body['username'] as String,
+    );
+  }
 
   Future<bool> health() async {
     final response = await _client
@@ -86,13 +147,28 @@ class CloudflareD1Client {
     }).toList();
   }
 
+  Map<String, dynamic> _decodeObject(http.Response response) {
+    _ensureJson(response);
+    final body = jsonDecode(response.body);
+    if (body is! Map) {
+      throw const CloudflareD1Exception('invalid_response');
+    }
+    return Map<String, dynamic>.from(body);
+  }
+
   void _ensureJson(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw CloudflareD1Exception('Cloudflare D1 trả về ${response.statusCode}');
+      var code = 'http_${response.statusCode}';
+      final trimmed = response.body.trimLeft();
+      if (trimmed.startsWith('{')) {
+        final body = jsonDecode(response.body);
+        if (body is Map && body['error'] is String) code = body['error'] as String;
+      }
+      throw CloudflareD1Exception(code, statusCode: response.statusCode);
     }
     final trimmed = response.body.trimLeft();
     if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
-      throw const CloudflareD1Exception('API Cloudflare D1 chưa được gắn trên Pages');
+      throw const CloudflareD1Exception('api_missing');
     }
   }
 }

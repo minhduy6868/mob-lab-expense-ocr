@@ -5,13 +5,14 @@
  *   GET  /api/expenses
  *   POST /api/expenses/sync   { ops: [{op,id?,item?}] }
  *
- * Rows are scoped by the X-Device-Id header so each install keeps its own ledger.
+ * Expenses are scoped by the signed-in user. X-Device-Id is only used once,
+ * at login, to copy a previous device ledger into that account.
  */
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Device-Id',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Device-Id, Authorization',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -50,6 +51,77 @@ async function ensureSchema(env) {
     CREATE INDEX IF NOT EXISTS idx_expenses_device_time
     ON expenses (device_id, timestamp)
   `).run();
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `).run();
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `).run();
+}
+
+function randomHex(bytes) {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return [...arr].map((value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256(text) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+function cleanUsername(raw) {
+  const name = String(raw ?? '').trim().toLowerCase();
+  return /^[a-z0-9_]{3,24}$/.test(name) ? name : null;
+}
+
+function bearerToken(request) {
+  const header = request.headers.get('Authorization') || '';
+  if (!header.startsWith('Bearer ')) return null;
+  const token = header.slice(7).trim();
+  return /^[a-f0-9]{64}$/.test(token) ? token : null;
+}
+
+async function requireUser(env, request) {
+  const token = bearerToken(request);
+  if (!token) return null;
+  return env.DB.prepare(
+    `SELECT u.id AS userId, u.username AS username
+     FROM sessions s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.token = ?`,
+  ).bind(token).first();
+}
+
+async function adoptDeviceLedger(env, userId, deviceOwner) {
+  if (!deviceOwner || deviceOwner === userId) return;
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(deviceOwner)) return;
+  await env.DB.prepare(
+    `INSERT INTO expenses (id, device_id, title, amount, timestamp, category, receiptImagePath, rawOcrText, note)
+     SELECT id, ?1, title, amount, timestamp, category, receiptImagePath, rawOcrText, note
+     FROM expenses
+     WHERE device_id = ?2
+     ON CONFLICT(device_id, id) DO NOTHING`,
+  ).bind(userId, deviceOwner).run();
+}
+
+async function openSession(env, userId, username, deviceOwner) {
+  const token = randomHex(32);
+  await env.DB.prepare(
+    'INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)',
+  ).bind(token, userId, new Date().toISOString()).run();
+  await adoptDeviceLedger(env, userId, deviceOwner);
+  return { token, userId, username };
 }
 
 function listStmt(env, owner) {
@@ -147,14 +219,66 @@ export async function onRequest(context) {
       return json({ ok: true, engine: 'cloudflare-d1' });
     }
 
+    if (parts[0] === 'auth') {
+      if (parts[1] === 'me' && request.method === 'GET') {
+        const user = await requireUser(env, request);
+        if (!user) return json({ error: 'unauthorized' }, 401);
+        return json({ userId: user.userId, username: user.username });
+      }
+
+      if (parts[1] === 'logout' && request.method === 'POST') {
+        const token = bearerToken(request);
+        if (token) {
+          await env.DB.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run();
+        }
+        return json({ ok: true });
+      }
+
+      if (request.method === 'POST' && (parts[1] === 'login' || parts[1] === 'register')) {
+        const body = await request.json();
+        const username = cleanUsername(body?.username);
+        const password = String(body?.password ?? '');
+        if (!username) return json({ error: 'invalid_username' }, 400);
+        if (password.length < 6 || password.length > 72) return json({ error: 'weak_password' }, 400);
+        const deviceOwner = deviceId(request);
+
+        if (parts[1] === 'register') {
+          const userId = `usr_${randomHex(8)}`;
+          const salt = randomHex(16);
+          const passwordHash = await sha256(`${salt}:${password}`);
+          try {
+            await env.DB.prepare(
+              'INSERT INTO users (id, username, password_hash, salt, created_at) VALUES (?, ?, ?, ?, ?)',
+            ).bind(userId, username, passwordHash, salt, new Date().toISOString()).run();
+          } catch (error) {
+            const text = error instanceof Error ? error.message : String(error);
+            if (text.toLowerCase().includes('unique')) {
+              return json({ error: 'username_taken' }, 409);
+            }
+            throw error;
+          }
+          return json(await openSession(env, userId, username, deviceOwner));
+        }
+
+        const row = await env.DB.prepare(
+          'SELECT id, password_hash, salt FROM users WHERE username = ?',
+        ).bind(username).first();
+        if (!row) return json({ error: 'invalid_login' }, 401);
+        const passwordHash = await sha256(`${row.salt}:${password}`);
+        if (passwordHash !== row.password_hash) return json({ error: 'invalid_login' }, 401);
+        return json(await openSession(env, row.id, username, deviceOwner));
+      }
+
+      return json({ error: 'Not found' }, 404);
+    }
+
     if (parts[0] !== 'expenses') {
       return json({ error: 'Not found' }, 404);
     }
 
-    const owner = deviceId(request);
-    if (!owner) {
-      return json({ error: 'Missing or invalid X-Device-Id header' }, 400);
-    }
+    const user = await requireUser(env, request);
+    if (!user) return json({ error: 'unauthorized' }, 401);
+    const owner = user.userId;
 
     if (request.method === 'GET' && parts.length === 1) {
       return json({ items: await readItems(env, owner) });

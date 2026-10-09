@@ -41,6 +41,7 @@ class DatabaseHelper {
 
   SharedPreferences? _prefs;
   CloudflareD1Client? _client;
+  String? _accessToken;
   bool _ready = false;
 
   CloudSyncStatus lastStatus = CloudSyncStatus.checking;
@@ -61,7 +62,7 @@ class DatabaseHelper {
     _prefs = prefs;
     deviceId = prefs.getString(_deviceKey) ?? _createDeviceId();
     await prefs.setString(_deviceKey, deviceId);
-    _client = CloudflareD1Client(deviceId: deviceId);
+    _client = _buildClient();
     _queue
       ..clear()
       ..addAll(_readQueue(prefs));
@@ -71,6 +72,45 @@ class DatabaseHelper {
         ..addAll(_readCache(prefs));
     }
     _ready = true;
+  }
+
+  void setAccessToken(String? token) {
+    _accessToken = token;
+    if (_ready) _client = _buildClient();
+  }
+
+  CloudflareD1Client _buildClient() {
+    return CloudflareD1Client(deviceId: deviceId, accessToken: _accessToken);
+  }
+
+  Future<AuthSession> registerAccount(String username, String password) async {
+    await _ensureInit();
+    return _client!.register(username, password);
+  }
+
+  Future<AuthSession> loginAccount(String username, String password) async {
+    await _ensureInit();
+    return _client!.login(username, password);
+  }
+
+  Future<AuthSession> currentAccount() async {
+    await _ensureInit();
+    return _client!.me();
+  }
+
+  Future<void> logoutAccount() async {
+    await _ensureInit();
+    try {
+      await _client!.logout();
+    } catch (_) {}
+  }
+
+  Future<void> wipeLocalLedger() async {
+    await _ensureInit();
+    _queue.clear();
+    await _saveQueue();
+    await _clearLocal();
+    await _prefs?.remove(_bootKey);
   }
 
   String _createDeviceId() {

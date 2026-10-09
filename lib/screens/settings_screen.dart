@@ -1,8 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../l10n/app_text.dart';
 import '../services/database_helper.dart';
 import '../services/platform_service.dart';
+import '../state/auth_controller.dart';
 import '../state/expense_providers.dart';
+import '../widgets/install_app_card.dart';
+import '../widgets/language_picker.dart';
+import '../widgets/vku_logo.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +27,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _checkBattery();
   }
 
+  String _syncLabel(AppText text, CloudSyncPhase phase) {
+    return switch (phase) {
+      CloudSyncPhase.synced => text.synced,
+      CloudSyncPhase.offline => text.offline,
+      CloudSyncPhase.checking => text.syncing,
+    };
+  }
+
   Future<void> _checkBattery() async {
     setState(() => _isLoadingBattery = true);
     final level = await PlatformService.getBatteryLevel();
@@ -35,18 +49,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final text = AppText.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final sync = ref.watch(cloudSyncProvider);
+    final auth = ref.watch(authProvider);
     final db = DatabaseHelper.instance;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cài Đặt & Hệ Thống'),
+        title: Text(text.settings),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
+            Card(
+              elevation: 0.8,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const VkuLogo(size: 56),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'VKU Ledger',
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                              ),
+                              const SizedBox(height: 4),
+                              Text('${text.signedInAs} ${auth.username}'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const LanguagePicker(),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text(text.confirmLogout),
+                            content: Text(text.confirmLogoutBody),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(text.cancel)),
+                              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(text.logOut)),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await ref.read(authProvider.notifier).signOut();
+                        }
+                      },
+                      icon: const Icon(Icons.logout_rounded),
+                      label: Text(text.logOut),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 12),
+              const InstallAppCard(),
+            ],
+            const SizedBox(height: 12),
             // Theme Mode Section
             Card(
               elevation: 0.8,
@@ -67,28 +141,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Giao diện Material Design 3',
+                          text.themeTitle,
                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
                     SegmentedButton<ThemeMode>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                           value: ThemeMode.system,
-                          icon: Icon(Icons.brightness_auto_rounded),
-                          label: Text('Tự động'),
+                          icon: const Icon(Icons.brightness_auto_rounded),
+                          label: Text(text.themeSystem),
                         ),
                         ButtonSegment(
                           value: ThemeMode.light,
-                          icon: Icon(Icons.light_mode_rounded),
-                          label: Text('Sáng'),
+                          icon: const Icon(Icons.light_mode_rounded),
+                          label: Text(text.themeLight),
                         ),
                         ButtonSegment(
                           value: ThemeMode.dark,
-                          icon: Icon(Icons.dark_mode_rounded),
-                          label: Text('Tối'),
+                          icon: const Icon(Icons.dark_mode_rounded),
+                          label: Text(text.themeDark),
                         ),
                       ],
                       selected: {themeMode},
@@ -203,34 +277,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       child: Icon(Icons.cloud_done_rounded, color: theme.colorScheme.primary, size: 20),
                     ),
-                    title: const Text('Cloudflare D1', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${sync.detail}\nThiết bị ${db.deviceLabel}. Ảnh hóa đơn vẫn nằm trên máy.'),
+                    title: Text(text.cloudTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${_syncLabel(text, sync.phase)}\n${text.cloudBody(db.deviceLabel)}'),
                     isThreeLine: true,
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.sync_rounded),
-                    title: const Text('Đồng bộ ngay'),
-                    subtitle: const Text('Đẩy sổ trên máy lên Cloudflare D1 và kéo bản mới nhất'),
+                    title: Text(text.syncNow),
+                    subtitle: Text(text.syncNowBody),
                     onTap: () async {
                       await ref.read(expenseListProvider.notifier).refreshFromCloud();
                       if (context.mounted) {
-                        final detail = DatabaseHelper.instance.lastStatus.detail;
+                        final phase = DatabaseHelper.instance.lastStatus.phase;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(detail)),
+                          SnackBar(content: Text(_syncLabel(AppText.of(context), phase))),
                         );
                       }
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.restart_alt_rounded),
-                    title: const Text('Nạp lại 7 hóa đơn mẫu VKU'),
-                    subtitle: const Text('Khôi phục mẫu Highlands, Co.op Mart, Petrolimex...'),
+                    title: Text(text.seedSamples),
+                    subtitle: Text(text.seedSamplesBody),
                     onTap: () async {
                       await ref.read(expenseListProvider.notifier).seedSampleData();
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Đã nạp lại 7 hóa đơn mẫu.')),
+                          SnackBar(content: Text(text.samplesReloaded)),
                         );
                       }
                     },
@@ -238,22 +312,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     leading: Icon(Icons.delete_forever_rounded, color: theme.colorScheme.error),
                     title: Text(
-                      'Xóa sạch sổ chi',
+                      text.clearLedger,
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
-                    subtitle: const Text('Xóa trên máy và trên Cloudflare D1'),
+                    subtitle: Text(text.clearLedgerBody),
                     onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Xác nhận xóa sạch'),
-                          content: const Text('Thao tác này sẽ xóa vĩnh viễn tất cả hóa đơn đã lưu.'),
+                          title: Text(text.confirmErase),
+                          content: Text(text.confirmEraseBody),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(text.cancel)),
                             FilledButton(
                               onPressed: () => Navigator.pop(ctx, true),
                               style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
-                              child: const Text('Xóa sạch'),
+                              child: Text(text.erase),
                             ),
                           ],
                         ),
@@ -263,7 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         await ref.read(expenseListProvider.notifier).clearAll();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã dọn dẹp cơ sở dữ liệu!')),
+                            SnackBar(content: Text(text.erased)),
                           );
                         }
                       }

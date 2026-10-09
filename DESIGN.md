@@ -17,10 +17,12 @@ Utility register. Light and dark both ship. System theme is the default. Accent 
 
 ## Voice
 
-Tiếng Việt, câu ngắn, động từ đứng trước. Không emoji trong chrome. Nút nói kết quả: "Quét hóa đơn", "Xóa sạch", "Đồng bộ ngay".
+Tiếng Việt mặc định, chuyển được sang tiếng Anh. Câu ngắn, động từ đứng trước. Không emoji trong chrome. Nút nói kết quả: "Quét hóa đơn", "Xóa sạch", "Đồng bộ ngay".
 
 ## Decisions
 
 - 2026-10-09: Giữ navy VKU, thêm vàng hóa đơn làm accent duy nhất cho hành động chính.
 - 2026-10-09: Logo là hóa đơn kem trong khung quét vàng. Dùng cho icon, splash, và đầu sổ chi.
 - 2026-10-09: Cloudflare D1 là sổ trên mây, SQLite là bản trên máy. Mỗi cài đặt một khóa thiết bị.
+- 2026-10-09: Đăng nhập bằng tên và mật khẩu. Sổ gắn với tài khoản. Đăng xuất xóa bản trên máy.
+- 2026-10-09: Web có thẻ cài app: thêm vào màn hình chính, hoặc tải APK Android. Logo nằm trên splash, đăng nhập, cài đặt, và thẻ cài app.

@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../models/parsed_receipt.dart';
 import 'receipt_parser.dart';
+import 'web_ocr.dart';
 
 class OcrService {
   static final OcrService instance = OcrService._init();
@@ -24,8 +25,12 @@ class OcrService {
     _textRecognizer?.close();
   }
 
-  /// Pick an image from camera or gallery and process OCR
-  Future<ParsedReceipt?> processFromImageSource(ImageSource source) async {
+  /// Pick an image from camera or gallery and process OCR.
+  /// [onPicked] runs after the photo is chosen, before text recognition.
+  Future<ParsedReceipt?> processFromImageSource(
+    ImageSource source, {
+    void Function()? onPicked,
+  }) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
@@ -35,6 +40,7 @@ class OcrService {
       );
 
       if (pickedFile == null) return null;
+      onPicked?.call();
 
       // Save persistent receipt image to local app documents directory
       String? savedImagePath;
@@ -64,16 +70,24 @@ class OcrService {
       try {
         final inputImage = InputImage.fromFilePath(imagePath);
         final RecognizedText recognizedText = await _textRecognizer!.processImage(inputImage);
-        final rawText = recognizedText.text;
-
-        return ReceiptParser.parse(rawText, imagePath: savedImagePath ?? imagePath);
+        final rawText = recognizedText.text.trim();
+        if (rawText.isNotEmpty) {
+          return ReceiptParser.parse(rawText, imagePath: savedImagePath ?? imagePath);
+        }
       } catch (e) {
-        debugPrint('ML Kit recognition failed: $e, falling back to heuristic mock');
+        debugPrint('ML Kit recognition failed: $e');
       }
     }
 
-    // Fallback if running on simulator / web / desktop without native camera ML Kit
-    return _generateFallbackReceipt(imagePath: savedImagePath ?? imagePath);
+    if (kIsWeb) {
+      final bytes = await XFile(imagePath).readAsBytes();
+      final rawText = (await recognizeImageBytes(bytes)).trim();
+      if (rawText.isNotEmpty) {
+        return ReceiptParser.parse(rawText, imagePath: savedImagePath ?? imagePath);
+      }
+    }
+
+    throw const OcrReadException();
   }
 
   /// Parse directly from custom/pasted raw text
@@ -81,26 +95,8 @@ class OcrService {
     return ReceiptParser.parse(rawText, imagePath: imagePath);
   }
 
-  ParsedReceipt _generateFallbackReceipt({String? imagePath}) {
-    const sampleText = '''
-HIGHLANDS COFFEE
-Tầng 1, VKU Campus, Đà Nẵng
-ĐT: 0236 3667 113
-HÓA ĐƠN THANH TOÁN
-Ngày: 22/10/2026 09:30
-Thu ngân: Thu_Ngan_01
+}
 
-1. Phin Sữa Đá (L)     39.000
-2. Trà Sen Vàng (M)    45.000
-3. Bánh Chuối          29.000
-
-Cộng tiền hàng:       113.000
-VAT (8%):               9.040
-TỔNG CỘNG:            122.040 đ
-
-Thanh toán: TIỀN MẶT
-Cảm ơn Quý khách & Hẹn gặp lại!
-''';
-    return ReceiptParser.parse(sampleText, imagePath: imagePath);
-  }
+class OcrReadException implements Exception {
+  const OcrReadException();
 }

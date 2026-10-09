@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
+import '../l10n/app_text.dart';
 import '../state/expense_providers.dart';
 
 /// ExpenseDetailScreen reached via /expense/:id (Slide 21)
@@ -22,9 +23,9 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
     if (expense == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Chi tiết chi tiêu')),
-        body: const Center(
-          child: Text('Không tìm thấy khoản chi tiêu hoặc đã bị xóa.'),
+        appBar: AppBar(title: Text(AppText.of(context).detailTitle)),
+        body: Center(
+          child: Text(AppText.of(context).missingExpense),
         ),
       );
     }
@@ -33,7 +34,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hóa Đơn Chi Tiêu'),
+        title: Text(AppText.of(context).detailTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined),

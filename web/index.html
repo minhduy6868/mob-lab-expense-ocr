@@ -80,19 +80,46 @@
   </div>
 
   <script>
-    // Bypass outdated service worker cache on reload
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
+    window.vkuPwa = { event: null };
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      window.vkuPwa.event = event;
+    });
+    window.vkuPromptInstall = async function () {
+      if (!window.vkuPwa.event) return 'unavailable';
+      window.vkuPwa.event.prompt();
+      var choice = await window.vkuPwa.event.userChoice;
+      window.vkuPwa.event = null;
+      return choice.outcome || 'dismissed';
+    };
+    window.vkuDownloadApk = function () {
+      var link = document.createElement('a');
+      link.href = 'downloads/VKU-Ledger.apk';
+      link.download = 'VKU-Ledger.apk';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    };
+
+    var vkuOcrWorker = null;
+    function vkuEnsureTesseract() {
+      if (window.Tesseract) return Promise.resolve();
+      return new Promise(function (resolve, reject) {
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+        script.onload = function () { resolve(); };
+        script.onerror = function () { reject(new Error('tesseract_missing')); };
+        document.head.appendChild(script);
       });
     }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) caches.delete(name);
-      });
-    }
+    window.vkuRecognizeText = async function (dataUrl) {
+      await vkuEnsureTesseract();
+      if (!vkuOcrWorker) {
+        vkuOcrWorker = await Tesseract.createWorker('vie+eng');
+      }
+      var result = await vkuOcrWorker.recognize(dataUrl);
+      return (result && result.data && result.data.text) ? result.data.text : '';
+    };
   </script>
   <script src="flutter_bootstrap.js?v=2.0.0" async></script>
 </body>

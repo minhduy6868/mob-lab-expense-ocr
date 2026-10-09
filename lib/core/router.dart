@@ -3,19 +3,37 @@ import '../models/expense_item.dart';
 import '../models/parsed_receipt.dart';
 import '../screens/expense_detail_screen.dart';
 import '../screens/expense_list_screen.dart';
+import '../screens/login_screen.dart';
 import '../screens/receipt_review_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/scan_receipt_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/shell_screen.dart';
 import '../screens/splash_screen.dart';
+import '../state/auth_gate.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
+  refreshListenable: authGate,
+  redirect: (context, state) {
+    final location = state.matchedLocation;
+    final status = authGate.status;
+    if (status == AuthStatus.unknown) {
+      return location == '/splash' ? null : '/splash';
+    }
+    final signedIn = status == AuthStatus.signedIn;
+    if (!signedIn) return location == '/login' ? null : '/login';
+    if (location == '/login' || location == '/splash') return '/dash';
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/splash',
       builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
     ),
     // ShellRoute providing persistent NavigationBar (Slide 23)
     ShellRoute(

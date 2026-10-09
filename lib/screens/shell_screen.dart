@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/theme.dart';
+import '../l10n/app_text.dart';
 
 /// ShellScreen provides the modern Floating Glassmorphic Dock Navigation Bar
 class ShellScreen extends StatelessWidget {
@@ -41,6 +42,7 @@ class ShellScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final selectedIdx = _calculateSelectedIndex(context);
     final isDark = theme.brightness == Brightness.dark;
+    final text = AppText.of(context);
 
     return Scaffold(
       body: Stack(
@@ -90,7 +92,7 @@ class ShellScreen extends StatelessWidget {
                         selectedIndex: selectedIdx,
                         icon: Icons.account_balance_wallet_outlined,
                         activeIcon: Icons.account_balance_wallet_rounded,
-                        label: 'Sổ chi',
+                        label: text.ledger,
                         theme: theme,
                         onTap: () => _onItemTapped(0, context),
                       ),
@@ -99,13 +101,14 @@ class ShellScreen extends StatelessWidget {
                         selectedIndex: selectedIdx,
                         icon: Icons.pie_chart_outline_rounded,
                         activeIcon: Icons.pie_chart_rounded,
-                        label: 'Báo cáo',
+                        label: text.reports,
                         theme: theme,
                         onTap: () => _onItemTapped(1, context),
                       ),
                       _buildCenterScanButton(
                         isSelected: selectedIdx == 2,
                         theme: theme,
+                        label: text.scan,
                         onTap: () => _onItemTapped(2, context),
                       ),
                       _buildNavItem(
@@ -113,7 +116,7 @@ class ShellScreen extends StatelessWidget {
                         selectedIndex: selectedIdx,
                         icon: Icons.tune_rounded,
                         activeIcon: Icons.tune_rounded,
-                        label: 'Hệ thống',
+                        label: text.settings,
                         theme: theme,
                         onTap: () => _onItemTapped(3, context),
                       ),
@@ -177,6 +180,7 @@ class ShellScreen extends StatelessWidget {
   Widget _buildCenterScanButton({
     required bool isSelected,
     required ThemeData theme,
+    required String label,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -197,13 +201,13 @@ class ShellScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.document_scanner_rounded, color: AppColors.navy, size: 20),
-            SizedBox(width: 6),
+            const Icon(Icons.document_scanner_rounded, color: AppColors.navy, size: 20),
+            const SizedBox(width: 6),
             Text(
-              'Quét',
+              label,
               style: TextStyle(
                 color: AppColors.navy,
                 fontWeight: FontWeight.w800,

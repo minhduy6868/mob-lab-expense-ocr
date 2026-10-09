@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/formatters.dart';
 import '../models/expense_category.dart';
@@ -56,16 +57,18 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
 
     final avgSpend = expenses.isNotEmpty ? grandTotal / expenses.length : 0.0;
 
+    final text = AppText.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Báo cáo'),
+        title: Text(text.reports),
         bottom: TabBar(
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.tab,
           indicatorWeight: 3,
-          tabs: const [
-            Tab(icon: Icon(Icons.pie_chart_rounded), text: 'Cơ Cấu Danh Mục'),
-            Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Chi Tiêu Tuần Này'),
+          tabs: [
+            Tab(icon: const Icon(Icons.pie_chart_rounded), text: text.byCategory),
+            Tab(icon: const Icon(Icons.bar_chart_rounded), text: text.weekTab),
           ],
         ),
       ),

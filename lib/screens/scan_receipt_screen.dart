@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../l10n/app_text.dart';
 import '../models/parsed_receipt.dart';
 import '../services/ocr_service.dart';
 
@@ -51,21 +52,22 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
     });
 
     try {
-      final parsed = await OcrService.instance.processFromImageSource(source);
+      final parsed = await OcrService.instance.processFromImageSource(
+        source,
+        onPicked: () {
+          if (!mounted) return;
+          setState(() => _statusMessage = AppText.of(context).readingReceipt);
+        },
+      );
       if (!mounted) return;
 
       if (parsed != null) {
-        setState(() {
-          _statusMessage = 'Google ML Kit đang nhận diện & bóc tách regex...';
-        });
-        await Future.delayed(const Duration(milliseconds: 350));
-        if (!mounted) return;
         _navigateToReview(parsed);
       }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không đọc được ảnh. Chụp lại hoặc chọn ảnh khác.')),
+        SnackBar(content: Text(AppText.of(context).cannotReadImage)),
       );
     } finally {
       if (mounted) {
@@ -103,11 +105,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.edit_note_rounded),
-            SizedBox(width: 8),
-            Text('Dán văn bản hóa đơn'),
+            const Icon(Icons.edit_note_rounded),
+            const SizedBox(width: 8),
+            Text(AppText.of(context).pasteReceipt),
           ],
         ),
         content: SizedBox(
@@ -124,7 +126,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
+            child: Text(AppText.of(context).cancel),
           ),
           FilledButton.icon(
             icon: const Icon(Icons.psychology_rounded, size: 18),
@@ -136,7 +138,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                 _navigateToReview(parsed);
               }
             },
-            label: const Text('Đọc hóa đơn'),
+            label: Text(AppText.of(context).readReceipt),
           ),
         ],
       ),
@@ -149,11 +151,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quét hóa đơn'),
+        title: Text(AppText.of(context).scanTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.paste_rounded),
-            tooltip: 'Dán văn bản OCR',
+            tooltip: AppText.of(context).pasteOcr,
             onPressed: _openManualTextInputDialog,
           ),
         ],
@@ -306,9 +308,9 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              const Text(
-                                'Google ML Kit On-Device OCR',
-                                style: TextStyle(
+                              Text(
+                                AppText.of(context).ocrBanner,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
@@ -316,7 +318,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Tự động bóc tách Tổng tiền, Tên quán, Ngày giao dịch',
+                                AppText.of(context).ocrBannerBody,
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.75),
                                   fontSize: 11.5,
@@ -339,7 +341,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                               ? null
                               : () => _processFromSource(ImageSource.camera),
                           icon: const Icon(Icons.camera_alt_rounded),
-                          label: const Text('Chụp Máy Ảnh'),
+                          label: Text(AppText.of(context).takePhoto),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -356,7 +358,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                               ? null
                               : () => _processFromSource(ImageSource.gallery),
                           icon: const Icon(Icons.photo_library_rounded),
-                          label: const Text('Chọn Tệp Ảnh'),
+                          label: Text(AppText.of(context).pickImage),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -379,7 +381,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                           Icon(Icons.flash_on_rounded, size: 20, color: theme.colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Thử Nghiệm Mẫu Hóa Đơn Việt Nam',
+                            AppText.of(context).sampleSection,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
@@ -406,7 +408,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Kiểm thử thuật toán Regex đa định dạng (VNĐ, đ, dấu chấm/phẩy, không cần giấy in)',
+                    AppText.of(context).sampleSectionBody,
                     style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline),
                   ),
                   const SizedBox(height: 12),

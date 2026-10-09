@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
 import '../core/theme.dart';
-import '../state/expense_providers.dart';
+import '../l10n/app_text.dart';
+import '../widgets/vku_logo.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -31,17 +30,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     } else {
       _controller.forward();
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) => _open(reduceMotion));
-  }
-
-  Future<void> _open(bool reduceMotion) async {
-    final dwell = Future<void>.delayed(Duration(milliseconds: reduceMotion ? 160 : 880));
-    try {
-      await ref.read(expenseListProvider.future);
-    } catch (_) {}
-    await dwell;
-    if (!mounted) return;
-    context.go('/dash');
   }
 
   @override
@@ -66,15 +54,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
-                      child: Image.asset(
-                        'assets/brand/icon.png',
-                        width: 120,
-                        height: 120,
-                        semanticLabel: 'Logo VKU Ledger',
-                      ),
-                    ),
+                    const VkuLogo(size: 120),
                     const SizedBox(height: 24),
                     Text(
                       'VKU ĐÀ NẴNG',
@@ -96,7 +76,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sổ chi tiêu hóa đơn',
+                      AppText.of(context).appSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.paper.withValues(alpha: 0.78),

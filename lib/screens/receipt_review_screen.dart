@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
+import '../l10n/app_text.dart';
 import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../models/parsed_receipt.dart';
@@ -113,7 +114,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
         );
         ref.read(expenseListProvider.notifier).updateExpense(updated);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã cập nhật khoản chi.')),
+          SnackBar(content: Text(AppText.of(context).updated)),
         );
       } else {
         // Add new expense
@@ -129,7 +130,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
         );
         ref.read(expenseListProvider.notifier).addExpense(newItem);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã lưu khoản chi.')),
+          SnackBar(content: Text(AppText.of(context).saved)),
         );
       }
 
@@ -145,12 +146,15 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Chỉnh Sửa Chi Tiêu' : 'Kiểm Tra & Xác Nhận OCR'),
+        title: Text(isEditing ? AppText.of(context).editTitle : AppText.of(context).reviewTitle),
         actions: [
           TextButton.icon(
             onPressed: _submitForm,
             icon: const Icon(Icons.check_circle_rounded),
-            label: const Text('Lưu lại', style: TextStyle(fontWeight: FontWeight.bold)),
+            label: Text(
+              isEditing ? AppText.of(context).saveChanges : AppText.of(context).saveLedger,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -403,11 +407,11 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: _rawOcrText!));
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Đã sao chép văn bản OCR!')),
+                                      SnackBar(content: Text(AppText.of(context).copiedOcr)),
                                     );
                                   },
                                   icon: const Icon(Icons.copy_rounded, size: 16),
-                                  label: const Text('Sao chép'),
+                                  label: Text(AppText.of(context).copy),
                                 ),
                               ),
                               Container(

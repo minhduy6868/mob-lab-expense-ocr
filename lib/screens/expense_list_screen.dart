@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/formatters.dart';
 import '../core/theme.dart';
+import '../l10n/app_text.dart';
 import '../models/expense_category.dart';
 import '../models/expense_item.dart';
 import '../services/database_helper.dart';
 import '../state/expense_providers.dart';
 import '../widgets/expense_summary_card.dart';
+import '../widgets/install_app_card.dart';
 
 /// Expense List Screen - Flagship Fintech Dashboard
 class ExpenseListScreen extends ConsumerStatefulWidget {
@@ -54,6 +57,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final text = AppText.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final asyncExpenses = ref.watch(expenseListProvider);
     final filteredItems = ref.watch(filteredExpensesProvider);
@@ -106,7 +110,11 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                sync.detail,
+                                switch (sync.phase) {
+                                  CloudSyncPhase.synced => text.synced,
+                                  CloudSyncPhase.offline => text.offline,
+                                  CloudSyncPhase.checking => text.syncing,
+                                },
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -138,6 +146,11 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                 ],
               ),
             ),
+            if (kIsWeb)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: InstallAppCard(),
+              ),
 
             // 2. High-End Fintech Wallet Hero Card
             Container(
@@ -202,7 +215,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                             Row(
                               children: [
                                 Text(
-                                  filtering ? 'Kết quả đang lọc' : 'Tổng chi tiêu tháng này',
+                                  filtering ? text.filtered : text.thisMonth,
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 12.5,
@@ -267,7 +280,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         if (!filtering) ...[
                           const SizedBox(height: 6),
                           Text(
-                            'Tuần này ${Formatters.formatVND(weekTotal)}',
+                            text.thisWeek(Formatters.formatVND(weekTotal)),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.82),
                               fontSize: 13,
@@ -284,31 +297,31 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                             final actions = [
                               _buildHeroAction(
                                 icon: Icons.document_scanner_rounded,
-                                label: 'Quét hóa đơn',
+                                label: text.scanReceipt,
                                 isPrimary: true,
                                 onTap: () => context.push('/scan'),
                               ),
                               _buildHeroAction(
                                 icon: Icons.edit_note_rounded,
-                                label: 'Nhập tay',
+                                label: text.manualEntry,
                                 isPrimary: false,
                                 onTap: () => context.push('/review'),
                               ),
                               _buildHeroAction(
                                 icon: Icons.insights_rounded,
-                                label: 'Biểu đồ',
+                                label: text.charts,
                                 isPrimary: false,
                                 onTap: () => context.go('/reports'),
                               ),
                               _buildHeroAction(
                                 icon: Icons.restart_alt_rounded,
-                                label: 'Nạp mẫu',
+                                label: text.loadSamples,
                                 isPrimary: false,
                                 onTap: () async {
                                   await ref.read(expenseListProvider.notifier).seedSampleData();
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Đã nạp 7 hóa đơn mẫu.')),
+                                      SnackBar(content: Text(text.samplesLoaded)),
                                     );
                                   }
                                 },
@@ -371,7 +384,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Tìm kiếm cửa hàng, nội dung chi tiêu...',
+                    hintText: text.searchHint,
                     hintStyle: TextStyle(
                       fontSize: 13,
                       color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
@@ -453,12 +466,12 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         return _LedgerMessage(
                           icon: Icons.receipt_long_outlined,
                           title: currentQuery.isNotEmpty || selectedCategory != null
-                              ? 'Không thấy khoản nào'
-                              : 'Sổ chi đang trống',
+                              ? text.emptyFilter
+                              : text.emptyLedger,
                           body: currentQuery.isNotEmpty || selectedCategory != null
-                              ? 'Thử từ khóa khác, hoặc xóa bộ lọc.'
-                              : 'Quét một hóa đơn để ghi khoản chi đầu tiên.',
-                          actionLabel: currentQuery.isNotEmpty || selectedCategory != null ? null : 'Quét hóa đơn',
+                              ? text.emptyFilterBody
+                              : text.emptyLedgerBody,
+                          actionLabel: currentQuery.isNotEmpty || selectedCategory != null ? null : text.scanReceipt,
                           onAction: currentQuery.isNotEmpty || selectedCategory != null
                               ? null
                               : () => context.push('/scan'),
